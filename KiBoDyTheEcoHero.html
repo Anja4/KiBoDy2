@@ -1,0 +1,546 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Kibody</title>
+	<style type='text/css'>
+		canvas { border: 1px solid black; }
+	</style>
+</head>
+<body>
+	<h1>Kibody, the eco friendly Hero</h1>
+	<canvas id='canvas' width='800' height='600'></canvas>
+	<script type='text/javascript'>
+	
+	var can = document.getElementById('canvas');
+	var ctx;
+	var lastTickTime = 0;
+	var UPDATEINTERVAL = 1000 / 50;
+	var accumulate = 0;
+	var GAME = 0;
+	var MENU = -1;
+	var update;
+	var draw;
+	var baddieSpawnInterval = 7000;
+	var timeTillBaddieSpawn = 7000;
+	
+	var spider = new Image();
+	var beedog = new Image();
+	var emoTree = new Image();
+	var towerTree = new Image();
+	
+	var baddies = [];
+	var bullets = [];
+	var trees = [];
+	var testVar = 0;
+	var player = {
+		x: 0,
+		y: 0,
+		speed: 100, //speed is measured in pixels per second
+		angle: 0,
+		width: 30,
+		height: 30,
+		up: false,
+		down: false,
+		left: false,
+		right: false,
+		e: false,
+		eHeld: false,
+		WAIT: 150,
+		timeToWait: 1,
+		bulletToFire: {
+			x: 0,
+			y: 0,
+			width: 5,
+			height: 5,
+			angle: 0,
+			speed: 300,
+			damage: 25},
+		};
+	var mouse = {
+		x: 0,
+		y: 0};
+	var crosshair = {
+		gap: 10,
+		length: 20,
+		width: 2};
+	
+	var go=false;
+	var playButton={x:300,y:350,width:200,height:70}
+	var introButton={x:300,y:450,width:200,height:70}
+	
+	
+	
+	//*************************PLAY FUNCTIONS****************************
+	
+	
+	
+	
+	
+	function playUpdate(time){
+		//*****This code moves the player*****
+		if(player.up || player.down || player.right || player.left){
+			var vert = 0;
+			var horz = 0;
+			if(player.left)
+				horz--;
+			if(player.right)
+				horz++;
+			if(player.up)
+				vert--;
+			if(player.down)
+				vert++;
+			var angle = Math.atan2(vert,horz);
+			if(horz != 0)
+				player.x += Math.cos(angle) * player.speed * time * 0.001;
+			if(vert !=0)
+				player.y += Math.sin(angle) * player.speed * time * 0.001;
+		}
+		
+		//Collision detection with walls
+		if(player.x < 0)
+			player.x = 0;
+		else if(player.x + player.width > can.width)
+			player.x = can.width - player.width;
+		if(player.y < 0)
+			player.y = 0;
+		else if(player.y + player.height > can.height)
+			player.y = can.height - player.height;
+		
+		
+		//code for the player's shooting mechanic
+		player.timeToWait -= time;
+		if(player.timeToWait < 0)
+			player.timeToWait = 0;
+		
+		//*****This code moves all the baddies*****
+		for(var i = 0; i < baddies.length; i++){
+			var xx = can.width / 2;
+			var yy = can.height / 2;
+			var angle = Math.atan2(yy - baddies[i].y, xx - baddies[i].x);
+			baddies[i].x += Math.cos(angle) * baddies[i].speed * time * 0.001;
+			baddies[i].y += Math.sin(angle) * baddies[i].speed * time * 0.001;
+		}
+		
+		//******This code moves the bullets*****
+		for(var i = 0; i < bullets.length; i++){
+			var xx = can.width / 2;
+			var yy = can.height / 2;
+			bullets[i].x += Math.cos(bullets[i].angle) * bullets[i].speed * time * 0.001;
+			bullets[i].y += Math.sin(bullets[i].angle) * bullets[i].speed * time * 0.001;
+		}
+		
+		//*****This code makes the trees shoot at baddies
+		for(var i = 0; i < trees.length; i++){
+			
+			var treeCenter = {
+				x: trees[i].x + (trees[i].width * 0.5),
+				y: trees[i].y + (trees[i].height * 0.5)};
+				
+			trees[i].timeToWait -= time;
+			
+			if(trees[i].timeToWait <= 0){
+			
+				var distance = -1;
+				var index = -1;
+				for(var j = 0; j < baddies.length; j++){
+					//find the distance from the center of the tree to the center of the baddie
+					var baddieCenter = {
+						x: baddies[j].x + (baddies[j].width * 0.5),
+						y: baddies[j].y + (baddies[j].height * 0.5)};
+					
+					var curDist = Math.sqrt(Math.pow(baddieCenter.x - treeCenter.x,2) + Math.pow( baddieCenter.y - treeCenter.y,2));
+					if(distance == -1 || curDist < distance){
+						index = j;
+						distance = curDist;
+					}
+				}
+				if(index != -1){
+					var baddieCenter = {
+						x: baddies[index].x + (baddies[index].width * 0.5),
+						y: baddies[index].y + (baddies[index].height * 0.5),
+						};
+					var bul = {//The reason why it imports each individual variable is to create a copy of the record, instead of using the reference
+						x: treeCenter.x,
+						y: treeCenter.y,
+						width: trees[i].bulletToFire.width,
+						height: trees[i].bulletToFire.height,
+						angle: trees[i].bulletToFire.angle,
+						speed: trees[i].bulletToFire.speed,
+						damage: trees[i].bulletToFire.damage};
+					bul.angle = Math.atan2((baddieCenter.y - treeCenter.y) , (baddieCenter.x - treeCenter.x));
+					addBullet(bul);
+					
+					trees[i].timeToWait += trees[i].WAIT;
+				}
+				else{
+					trees[i].timeToWait += time;
+				}
+			}
+		}
+		
+		//collision detection between baddies and bullets
+		for(var i = 0; i < baddies.length; i++){
+			for(var j = 0; j < bullets.length; j++){
+				if(collide(baddies[i],bullets[j])){
+					baddies[i].health -= bullets[j].damage;
+					bullets.splice(j,1);
+					j--;
+				}
+			}
+		}
+		
+		//deleting baddies that have died.
+		for(var i = 0; i < baddies.length; i++){
+			if(baddies[i].health <= 0){
+				baddies.splice(i,1);
+				i--;
+			}
+		}
+		
+		//deleting bullets significantly outside of canvas
+		for(var i = 0; i < bullets.length; i++){
+			if(bullets[i].x < -100 || bullets[i].x > can.width + 100 || bullets[i].y < -100 || bullets[i].y > can.height + 100){
+				bullets.splice(i,1);
+				i--;
+			}
+		}
+		
+		//spawning baddies
+		timeTillBaddieSpawn -= time;
+		if(timeTillBaddieSpawn <= 0){
+			addBaddie();
+			if(baddieSpawnInterval > 500)
+				baddieSpawnInterval -= 50;
+			timeTillBaddieSpawn = baddieSpawnInterval;
+		}
+		
+		//making trees
+		if(player.e == true && player.eHeld == false){
+			addTree(player.x, player.y, "blah");
+			player.eHeld = true;
+		}
+		else if(player.e == false && player.eHeld == true)
+			player.eHeld = false;
+		
+	}
+	
+	function playDraw(){
+		ctx.clearRect(0,0,can.width, can.height);
+		
+		//Center Tree
+		ctx.drawImage(emoTree, 338, 230);
+		
+		//Trees
+		ctx.fillStyle = "#00FF00";
+		for(var i = 0; i < trees.length; i++){
+			//ctx.fillRect(trees[i].x,trees[i].y,trees[i].width,trees[i].height);
+			ctx.drawImage(towerTree,trees[i].x,trees[i].y);
+		}
+		
+		//Baddies
+		//ctx.fillStyle = "#FF0000";
+		for(var i = 0; i < baddies.length; i++){
+			//ctx.fillRect(baddies[i].x,baddies[i].y,baddies[i].width,baddies[i].height);
+			ctx.drawImage(spider,baddies[i].x,baddies[i].y);
+		}
+		
+		//Player
+		//ctx.fillStyle = "#0000FF";
+		//ctx.fillRect(player.x, player.y, player.width, player.height);
+		ctx.drawImage(beedog,player.x,player.y);
+		
+		//Bullets
+		ctx.fillStyle = "#FF0000";
+		for(var j = 0; j < bullets.length; j++){
+			ctx.fillRect(bullets[j].x,bullets[j].y,bullets[j].width,bullets[j].height);
+		}
+		
+		//Crosshair
+		ctx.fillStyle = "#000000";
+		ctx.fillRect(mouse.x - (crosshair.width / 2),mouse.y - crosshair.length - crosshair.gap, crosshair.width, crosshair.length);
+		ctx.fillRect(mouse.x - (crosshair.width / 2),mouse.y + crosshair.gap, crosshair.width, crosshair.length);
+		ctx.fillRect(mouse.x - crosshair.length - crosshair.gap, mouse.y - (crosshair.width/2), crosshair.length, crosshair.width);
+		ctx.fillRect(mouse.x + crosshair.gap, mouse.y - (crosshair.width/2), crosshair.length, crosshair.width);
+		
+		//Things below this line are used for bug fixing.
+		ctx.fillStyle = "#000000";
+		//ctx.fillText(bullets.length + "",0,10);
+	}
+	
+	//Starting position
+	function playSetup(){
+		update = playUpdate;
+		draw = playDraw;
+		
+		player.x = 10;
+		player.y = 10;
+		spider.src="face-small.png";
+		beedog.src="beedog.png";
+		emoTree.src="Tree.png";
+		towerTree.src="tree2.png";
+	}
+	
+	function addBaddie(){
+		var bad = {
+			x: 0,
+			y: 0,
+			width: 30,
+			height: 30,
+			speed: 10,
+			health: 100,
+			};
+		
+		var rand = Math.floor(Math.random() + 0.5);
+		var rand2 = Math.floor(Math.random() + 0.5);
+		var xx = 0;
+		var yy = 0;
+		if(rand == 0){ // the x is random
+			xx = Math.random() * can.width;
+			if(rand2 == 0)
+				yy = -bad.height;
+			else
+				yy = can.height;
+		}
+		else{ //the y is random
+			yy = Math.random() * can.height;
+			if(rand2 == 0)
+				xx = -bad.width;
+			else
+				xx = can.width;
+		}
+		
+		bad.x = xx;
+		bad.y = yy;
+		
+		baddies.push(bad);
+	}
+	
+	function addBullet(b){//b must include these vars: x, y, width (5), height (5), speed (300), angle, damage (25)
+		bullets.push(b);
+	}
+	
+	function addTree(xx,yy,type){
+		
+		trees.push({
+			x: xx,
+			y: yy,
+			width: 50,
+			height: 50,
+			WAIT: 2000,
+			timeToWait: 2000,
+			health: 100,
+			bulletToFire: {
+				x: xx - 25,
+				y: yy - 25,
+				width: 5,
+				height: 5,
+				angle: 0,
+				speed: 300,
+				damage: 25
+				},
+			});
+	}
+	
+	function collide(obj1,obj2){
+		if(obj1.x + obj1.width < obj2.x)
+			return false;
+		if(obj1.y + obj1.height < obj2.y)
+			return false;
+		if(obj2.x + obj2.width < obj1.x)
+			return false;
+		if(obj2.y + obj2.height < obj1.y)
+			return false;
+		
+		return true;
+	}
+	
+	
+	
+	//****************************INTRO********************
+	
+	
+	
+	function introUpdate(time){
+	
+	}
+	
+	function introDraw(){
+		ctx.clearRect(0,0,800,600);
+		ctx.fillStyle="black";
+		ctx.fillRect(0,0,800,600);
+		ctx.fillStyle="white";
+		ctx.font="18pt serif";
+		ctx.fillText("The year is 2093.",100,100);
+		ctx.fillText("The world is in ruins.",100,150);
+		ctx.fillText("One can't walk but 10 feet without being killed by a Mecha-Mitchell.",100,200)
+		ctx.fillText("Only one man can save the world.",100,250);
+		ctx.fillText("That man is Kibody, the Tree Master.",100,300);
+	}
+	
+	function introSetup(){
+		update = introUpdate;
+		draw = introDraw;
+	}
+	
+	
+	
+	//****************************MENU***********
+	
+	
+	
+	function menuUpdate(time){
+		if ( mouse.clicked && contains(playButton, mouse) === true )
+			playSetup();
+		if ( mouse.clicked && contains(introButton, mouse) === true )
+			introSetup();
+	}
+	
+	function menuDraw(){
+		ctx.clearRect(0,0,can.width,can.height);
+		ctx.fillStyle="green";
+		ctx.fillRect(playButton.x, playButton.y, playButton.width, playButton.height);
+		ctx.fillRect(introButton.x,introButton.y,introButton.width,introButton.height);
+		
+		ctx.fillStyle="black";
+		var ms = {x: mouse.x, y: mouse.y, width: 0, height: 0};
+		if(collide(ms,playButton)){
+			ctx.font="34pt Helvetica";
+			ctx.fillText("Play!",345,395);
+		}
+		else{
+			ctx.font="30pt Helvetica";
+			ctx.fillText("Play!",350,400);
+		}
+		
+		if(collide(ms,introButton)){
+			ctx.font="34pt Helvetica";
+			ctx.fillText("Story!",345,495);
+		}
+		else{
+			ctx.font="30pt Helvetica";
+			ctx.fillText("Story!",350,500);
+		}
+		
+		ctx.fillText("Game Thingy 1.7!",250,100);
+	}
+	
+	function menuSetup(){
+		update = menuUpdate;
+		draw = menuDraw;
+	}
+	
+	
+	
+	//*****TICK FUNCTION*****
+	
+	
+	
+	function tick(time){
+		var deltaTime = time - lastTickTime;
+		
+		draw();
+		
+		accumulate += deltaTime;
+		
+		while(accumulate >= UPDATEINTERVAL){
+			update(UPDATEINTERVAL);
+			accumulate -= UPDATEINTERVAL;
+		}
+		
+		lastTickTime = time;
+		window.requestAnimationFrame(tick);
+	}
+	
+	//****Handling buttons being pressed*****
+	function handleKeyDown(evt){
+		if(evt.keyCode == 87)//w
+			player.up = true;
+		if(evt.keyCode == 83)//s
+			player.down = true;
+		if(evt.keyCode == 65)//a
+			player.left = true;
+		if(evt.keyCode == 68)//d
+			player.right = true;
+		if(evt.keyCode == 69)//e
+			player.e = true;
+			
+		if(65 <= evt.keyCode && evt.keyCode >= 90)
+			evt.preventDefault();
+	}
+	
+	function handleKeyUp(evt){
+		if(evt.keyCode == 87)//w
+			player.up = false;
+		if(evt.keyCode == 83)//s
+			player.down = false;
+		if(evt.keyCode == 65)//a
+			player.left = false;
+		if(evt.keyCode == 68)//d
+			player.right = false;
+		if(evt.keyCode == 69)//e
+			player.e = false;
+			
+		if(65 <= evt.keyCode && evt.keyCode >= 90)
+			evt.preventDefault();
+	}
+	
+	function handleClick(evt){
+		if(player.timeToWait <= 0 && update == playUpdate){
+			var bul = {
+				x: player.x + (player.width * 0.5) - (player.bulletToFire.width * 0.5),
+				y: player.y + (player.height * 0.5) - (player.bulletToFire.height * 0.5),
+				width: player.bulletToFire.width,
+				height: player.bulletToFire.height,
+				angle:0,
+				speed: player.bulletToFire.speed,
+				damage: player.bulletToFire.damage,
+			};
+				
+			bul.angle = Math.atan2(mouse.y - player.y - (player.height * 0.5), mouse.x - player.x - (player.width * 0.5));
+			
+			addBullet(bul);
+			player.timeToWait = player.WAIT;
+		}
+		else if(update == menuUpdate){
+			var ms = {
+				x: mouse.x,
+				y: mouse.y,
+				width: 0,
+				height: 0};
+			if(collide(ms,playButton))
+				playSetup();
+			else if(collide(ms,introButton))
+				introSetup();
+		}
+			
+		evt.preventDefault();
+	}
+	
+	function setMousePosition(event){
+		mouse.x = event.clientX - canvas.getBoundingClientRect().left;
+		mouse.y = event.clientY - canvas.getBoundingClientRect().top + 0.875;
+		
+		event.preventDefault();
+	}
+	//****End handling buttons being pressed**
+	
+	
+	function main(){
+		ctx = document.getElementById('canvas').getContext("2d");
+		menuSetup();
+		
+		window.requestAnimationFrame(tick);
+	}
+	
+	document.addEventListener('keydown', handleKeyDown);
+	document.addEventListener('keyup', handleKeyUp);
+	canvas.addEventListener('click', handleClick);
+	canvas.addEventListener('drag', handleClick);
+	canvas.onmousemove = function(){setMousePosition(event);};
+	
+	main();
+	
+	</script>
+</html>
