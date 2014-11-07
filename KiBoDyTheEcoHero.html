@@ -73,8 +73,6 @@
 	
 	
 	//*************************PLAY FUNCTIONS****************************
-	//TestingLine
-	//SecondTestLine
 	
 	
 	
@@ -235,20 +233,20 @@
 		//Trees
 		ctx.fillStyle = "#00FF00";
 		for(var i = 0; i < trees.length; i++){
-			//ctx.fillRect(trees[i].x,trees[i].y,trees[i].width,trees[i].height);
+			ctx.fillRect(trees[i].x,trees[i].y,trees[i].width,trees[i].height);
 			ctx.drawImage(towerTree,trees[i].x,trees[i].y);
 		}
 		
 		//Baddies
-		//ctx.fillStyle = "#FF0000";
+		ctx.fillStyle = "#FF0000";
 		for(var i = 0; i < baddies.length; i++){
-			//ctx.fillRect(baddies[i].x,baddies[i].y,baddies[i].width,baddies[i].height);
+			ctx.fillRect(baddies[i].x,baddies[i].y,baddies[i].width,baddies[i].height);
 			ctx.drawImage(spider,baddies[i].x,baddies[i].y);
 		}
 		
 		//Player
-		//ctx.fillStyle = "#0000FF";
-		//ctx.fillRect(player.x, player.y, player.width, player.height);
+		ctx.fillStyle = "#0000FF";
+		ctx.fillRect(player.x, player.y, player.width, player.height);
 		ctx.drawImage(beedog,player.x,player.y);
 		
 		//Bullets
