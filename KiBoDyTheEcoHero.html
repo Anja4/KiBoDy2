@@ -431,6 +431,28 @@
 	
 	
 	
+	//*****END GAME FUNCTIONS*****
+	
+	
+	
+	function endUpdate(time){
+		
+	}
+	
+	function endDraw(){
+		ctx.clearRect(0,0,can.width,can.height);
+		ctx.font = "34pt Helvetica";
+		ctx.fillStyle = "#000000";
+		ctx.fillText("GAME OVER",250,300);
+	}
+	
+	function endSetup(){
+		update = endUpdate;
+		draw = endDraw;
+	}
+	
+	
+	
 	//*****TICK FUNCTION*****
 	
 	
