@@ -72,6 +72,8 @@
 	var playButton={x:300,y:350,width:200,height:70}
 	var introButton={x:300,y:450,width:200,height:70}
 	
+	var endWaitTime = 5000;
+	var endTime = 5000;
 	
 	
 	//*************************PLAY FUNCTIONS****************************
@@ -363,7 +365,7 @@
 	
 	
 	function introUpdate(time){
-	
+		
 	}
 	
 	function introDraw(){
@@ -438,7 +440,10 @@
 	
 	
 	function endUpdate(time){
+		endTime -= time;
 		
+		if(endTime <= 0)
+			menuSetup();
 	}
 	
 	function endDraw(){
@@ -451,6 +456,8 @@
 	function endSetup(){
 		update = endUpdate;
 		draw = endDraw;
+		
+		endTime = endWaitTime;
 	}
 	
 	
