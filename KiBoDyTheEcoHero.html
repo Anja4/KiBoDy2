@@ -118,11 +118,20 @@
 		
 		//*****This code moves all the baddies*****
 		for(var i = 0; i < baddies.length; i++){
-			var xx = can.width / 2;
-			var yy = can.height / 2;
-			var angle = Math.atan2(yy - baddies[i].y, xx - baddies[i].x);
-			baddies[i].x += Math.cos(angle) * baddies[i].speed * time * 0.001;
-			baddies[i].y += Math.sin(angle) * baddies[i].speed * time * 0.001;
+			var col = false;
+			for(var j = 0; j < trees.length; j++){
+				if(collide(trees[j],baddies[i])
+					col = true;
+			}
+			
+			if(col == false){
+				var xx = can.width / 2;
+				var yy = can.height / 2;
+				var angle = Math.atan2(yy - baddies[i].y, xx - baddies[i].x);
+				baddies[i].x += Math.cos(angle) * baddies[i].speed * time * 0.001;
+				baddies[i].y += Math.sin(angle) * baddies[i].speed * time * 0.001;
+			}
+			else//write code here
 		}
 		
 		//******This code moves the bullets*****
