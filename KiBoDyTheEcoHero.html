@@ -13,8 +13,6 @@
 	<canvas id='canvas' width='800' height='600'></canvas>
 	<script type='text/javascript'>
 	
-	//Test line
-	
 	var can = document.getElementById('canvas');
 	var ctx;
 	var lastTickTime = 0;
@@ -27,6 +25,7 @@
 	var baddieSpawnInterval = 7000;
 	var timeTillBaddieSpawn = 7000;
 	
+	var pictures = false;
 	var spider = new Image();
 	var beedog = new Image();
 	var emoTree = new Image();
@@ -118,20 +117,27 @@
 		
 		//*****This code moves all the baddies*****
 		for(var i = 0; i < baddies.length; i++){
-			var col = false;
+			var col = -1;
 			for(var j = 0; j < trees.length; j++){
-				if(collide(trees[j],baddies[i])
-					col = true;
+				if(collide(trees[j],baddies[i]))
+					col = j;
 			}
 			
-			if(col == false){
+			baddies[i].hitTime -= time;
+			if(baddies[i].hitTime < 0)
+				baddies[i].hitTime = 0;
+			
+			if(col == -1){
 				var xx = can.width / 2;
 				var yy = can.height / 2;
-				var angle = Math.atan2(yy - baddies[i].y, xx - baddies[i].x);
+				var angle = Math.atan2(yy - baddies[i].y - (baddies[i].height * 0.5), xx - baddies[i].x - (baddies[i].width * 0.5));
 				baddies[i].x += Math.cos(angle) * baddies[i].speed * time * 0.001;
 				baddies[i].y += Math.sin(angle) * baddies[i].speed * time * 0.001;
 			}
-			else//write code here
+			else if(baddies[i].hitTime == 0){
+				trees[col].health -= baddies[i].damage;
+				baddies[i].hitTime = baddies[i].hitInterval;
+			}
 		}
 		
 		//******This code moves the bullets*****
@@ -210,6 +216,14 @@
 			}
 		}
 		
+		//deleting trees that have died
+		for(var i = 0; i < trees.length; i++){
+			if(trees[i].health <= 0){
+				trees.splice(i,1);
+				i--;
+			}
+		}
+		
 		//deleting bullets significantly outside of canvas
 		for(var i = 0; i < bullets.length; i++){
 			if(bullets[i].x < -100 || bullets[i].x > can.width + 100 || bullets[i].y < -100 || bullets[i].y > can.height + 100){
@@ -229,7 +243,7 @@
 		
 		//making trees
 		if(player.e == true && player.eHeld == false){
-			addTree(player.x, player.y, "blah");
+			addTree(player.x + (player.width * 0.5) - 25, player.y + (player.height * 0.5) - 25, "blah");
 			player.eHeld = true;
 		}
 		else if(player.e == false && player.eHeld == true)
@@ -246,20 +260,23 @@
 		//Trees
 		ctx.fillStyle = "#00FF00";
 		for(var i = 0; i < trees.length; i++){
-			ctx.drawImage(towerTree,trees[i].x,trees[i].y);
+			if(pictures)
+				ctx.drawImage(towerTree,trees[i].x,trees[i].y);
 			ctx.fillRect(trees[i].x,trees[i].y,trees[i].width,trees[i].height);
 		}
 		
 		//Baddies
 		ctx.fillStyle = "#FF0000";
 		for(var i = 0; i < baddies.length; i++){
-			ctx.drawImage(spider,baddies[i].x,baddies[i].y);
+			if(pictures)
+				ctx.drawImage(spider,baddies[i].x,baddies[i].y);
 			ctx.fillRect(baddies[i].x,baddies[i].y,baddies[i].width,baddies[i].height);
 		}
 		
 		//Player
 		ctx.fillStyle = "#0000FF";
-		ctx.drawImage(beedog,player.x,player.y);
+		if(pictures)
+			ctx.drawImage(beedog,player.x,player.y);
 		ctx.fillRect(player.x, player.y, player.width, player.height);
 		
 		//Bullets
@@ -301,6 +318,9 @@
 			height: 30,
 			speed: 10,
 			health: 100,
+			hitInterval: 1000,
+			hitTime: 1000,
+			damage: 20,
 			};
 		
 		var rand = Math.floor(Math.random() + 0.5);
