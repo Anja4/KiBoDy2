@@ -26,11 +26,11 @@
 	var baddieSpawnInterval = 7000;
 	var timeTillBaddieSpawn = 7000;
 	
-	var pictures = false;
 	var spider = new Image();
 	var beedog = new Image();
 	var emoTree = new Image();
 	var towerTree = new Image();
+	var background = new Image();
 	
 	var baddies = [];
 	var bullets = [];
@@ -39,7 +39,7 @@
 	var player = {
 		x: 0,
 		y: 0,
-		speed: 100, //speed is measured in pixels per second
+		speed: 150, //speed is measured in pixels per second
 		angle: 0,
 		width: 30,
 		height: 30,
@@ -174,7 +174,7 @@
 						distance = curDist;
 					}
 				}
-				if(index != -1){
+				if(index != -1 && distance <= trees[i].range){
 					var baddieCenter = {
 						x: baddies[index].x + (baddies[index].width * 0.5),
 						y: baddies[index].y + (baddies[index].height * 0.5),
@@ -244,7 +244,19 @@
 		
 		//making trees
 		if(player.e == true && player.eHeld == false){
-			addTree(player.x + (player.width * 0.5) - 25, player.y + (player.height * 0.5) - 25, "blah");
+			var xx = player.x + (player.width * 0.5);
+			var yy = player.y + (player.height * 0.5);
+			xx = Math.floor( xx / 50 ) * 50;
+			yy = Math.floor( yy / 50 ) * 50;
+			var obj = {x:xx,y:yy,width:50,height:50};
+			var canPlace = true;
+			for(var i = 0; i < trees.length; i++){
+				if(collide(trees[i],obj))
+					canPlace = false;
+			}
+			if(canPlace){
+				addTree(xx,yy,"blah");
+			}
 			player.eHeld = true;
 		}
 		else if(player.e == false && player.eHeld == true)
@@ -254,30 +266,36 @@
 	
 	function playDraw(){
 		ctx.clearRect(0,0,can.width, can.height);
+		ctx.drawImage(background,0,0);
+		
+		var xx = player.x + (player.width * 0.5);
+		var yy = player.y + (player.height * 0.5);
+		xx = Math.floor( xx / 50 ) * 50;
+		yy = Math.floor( yy / 50 ) * 50;
+		
+		ctx.fillStyle = "#FFFFCC";
+		ctx.fillRect(xx,yy,50,50);
 		
 		//Center Tree
-		ctx.drawImage(emoTree, 338, 230);
+		//ctx.drawImage(emoTree, 338, 230);
 		
 		//Trees
 		ctx.fillStyle = "#00FF00";
 		for(var i = 0; i < trees.length; i++){
-			if(pictures)
-				ctx.drawImage(towerTree,trees[i].x,trees[i].y);
-			ctx.fillRect(trees[i].x,trees[i].y,trees[i].width,trees[i].height);
+			ctx.drawImage(towerTree,trees[i].x,trees[i].y);
+			//ctx.fillRect(trees[i].x,trees[i].y,trees[i].width,trees[i].height);
 		}
 		
 		//Baddies
 		ctx.fillStyle = "#FF0000";
 		for(var i = 0; i < baddies.length; i++){
-			if(pictures)
-				ctx.drawImage(spider,baddies[i].x,baddies[i].y);
+			ctx.drawImage(spider,baddies[i].x,baddies[i].y);
 			ctx.fillRect(baddies[i].x,baddies[i].y,baddies[i].width,baddies[i].height);
 		}
 		
 		//Player
 		ctx.fillStyle = "#0000FF";
-		if(pictures)
-			ctx.drawImage(beedog,player.x,player.y);
+		ctx.drawImage(beedog,player.x,player.y);
 		ctx.fillRect(player.x, player.y, player.width, player.height);
 		
 		//Bullets
@@ -308,7 +326,8 @@
 		spider.src="face-small.png";
 		beedog.src="beedog.png";
 		emoTree.src="Tree.png";
-		towerTree.src="tree2.png";
+		towerTree.src="TreeNew.png";
+		background.src="Background.png";
 		
 		addTree((can.width * 0.5) - 25, (can.height * 0.5) - 25,"master");
 	}
@@ -365,6 +384,8 @@
 			WAIT: 2000,
 			timeToWait: 2000,
 			health: 100,
+			range: 200,
+			type: t,
 			bulletToFire: {
 				x: xx - 25,
 				y: yy - 25,
@@ -373,19 +394,18 @@
 				angle: 0,
 				speed: 300,
 				damage: 25
-				},
-			type: t,
+				}
 			});
 	}
 	
 	function collide(obj1,obj2){
-		if(obj1.x + obj1.width < obj2.x)
+		if(obj1.x + obj1.width <= obj2.x)
 			return false;
-		if(obj1.y + obj1.height < obj2.y)
+		if(obj1.y + obj1.height <= obj2.y)
 			return false;
-		if(obj2.x + obj2.width < obj1.x)
+		if(obj2.x + obj2.width <= obj1.x)
 			return false;
-		if(obj2.y + obj2.height < obj1.y)
+		if(obj2.y + obj2.height <= obj1.y)
 			return false;
 		
 		return true;
@@ -560,8 +580,15 @@
 				speed: player.bulletToFire.speed,
 				damage: player.bulletToFire.damage,
 			};
-				
+						
 			bul.angle = Math.atan2(mouse.y - player.y - (player.height * 0.5), mouse.x - player.x - (player.width * 0.5));
+			
+			var change = Math.random()*(Math.PI/15) - (Math.PI/30);
+			bul.angle += change;
+			if(bul.angle > Math.PI)
+				bul.angle -= 2*Math.PI;
+			else if(bul.angle < -1.0*Math.PI)
+				bul.angle += 2*Math.PI
 			
 			addBullet(bul);
 			player.timeToWait = player.WAIT;
