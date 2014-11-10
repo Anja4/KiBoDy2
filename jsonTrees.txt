@@ -1,0 +1,19 @@
+{ "master" : {
+	"x" : 0, 
+	"y" : 0, 
+	"width" : 50,
+	"height" : 50, 
+	"WAIT" : 2000, 
+	"timeToWait" : 2000, 
+	"health" : 300, 
+	"type" : "master", 
+	"bulletToFire" : {
+		"x" : 0, 
+		"y" : 0, 
+		"width": 5, 
+		"height" : 5, 
+		"angle" : 0, 
+		"speed" : 300, 
+		"damage" : 0 }
+	}
+}

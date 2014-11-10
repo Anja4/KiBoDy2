@@ -7,6 +7,7 @@
 	<style type='text/css'>
 		canvas { border: 1px solid black; }
 	</style>
+	<script type="text/javascript" src="howler.min.js"></script>
 </head>
 <body>
 	<h1>Kibody, the eco friendly Hero</h1>
@@ -29,6 +30,7 @@
 	var beedog = new Image();
 	var emoTree = new Image();
 	var towerTree = new Image();
+	var background = new Image();
 	
 	var baddies = [];
 	var bullets = [];
@@ -37,7 +39,7 @@
 	var player = {
 		x: 0,
 		y: 0,
-		speed: 100, //speed is measured in pixels per second
+		speed: 150, //speed is measured in pixels per second
 		angle: 0,
 		width: 30,
 		height: 30,
@@ -70,11 +72,11 @@
 	var playButton={x:300,y:350,width:200,height:70}
 	var introButton={x:300,y:450,width:200,height:70}
 	
+	var endWaitTime = 5000;
+	var endTime = 5000;
 	
 	
 	//*************************PLAY FUNCTIONS****************************
-	
-	
 	
 	
 	
@@ -116,11 +118,27 @@
 		
 		//*****This code moves all the baddies*****
 		for(var i = 0; i < baddies.length; i++){
-			var xx = can.width / 2;
-			var yy = can.height / 2;
-			var angle = Math.atan2(yy - baddies[i].y, xx - baddies[i].x);
-			baddies[i].x += Math.cos(angle) * baddies[i].speed * time * 0.001;
-			baddies[i].y += Math.sin(angle) * baddies[i].speed * time * 0.001;
+			var col = -1;
+			for(var j = 0; j < trees.length; j++){
+				if(collide(trees[j],baddies[i]))
+					col = j;
+			}
+			
+			baddies[i].hitTime -= time;
+			if(baddies[i].hitTime < 0)
+				baddies[i].hitTime = 0;
+			
+			if(col == -1){
+				var xx = can.width / 2;
+				var yy = can.height / 2;
+				var angle = Math.atan2(yy - baddies[i].y - (baddies[i].height * 0.5), xx - baddies[i].x - (baddies[i].width * 0.5));
+				baddies[i].x += Math.cos(angle) * baddies[i].speed * time * 0.001;
+				baddies[i].y += Math.sin(angle) * baddies[i].speed * time * 0.001;
+			}
+			else if(baddies[i].hitTime == 0){
+				trees[col].health -= baddies[i].damage;
+				baddies[i].hitTime = baddies[i].hitInterval;
+			}
 		}
 		
 		//******This code moves the bullets*****
@@ -156,7 +174,7 @@
 						distance = curDist;
 					}
 				}
-				if(index != -1){
+				if(index != -1 && distance <= trees[i].range){
 					var baddieCenter = {
 						x: baddies[index].x + (baddies[index].width * 0.5),
 						y: baddies[index].y + (baddies[index].height * 0.5),
@@ -199,6 +217,14 @@
 			}
 		}
 		
+		//deleting trees that have died
+		for(var i = 0; i < trees.length; i++){
+			if(trees[i].health <= 0){
+				trees.splice(i,1);
+				i--;
+			}
+		}
+		
 		//deleting bullets significantly outside of canvas
 		for(var i = 0; i < bullets.length; i++){
 			if(bullets[i].x < -100 || bullets[i].x > can.width + 100 || bullets[i].y < -100 || bullets[i].y > can.height + 100){
@@ -218,7 +244,19 @@
 		
 		//making trees
 		if(player.e == true && player.eHeld == false){
-			addTree(player.x, player.y, "blah");
+			var xx = player.x + (player.width * 0.5);
+			var yy = player.y + (player.height * 0.5);
+			xx = Math.floor( xx / 50 ) * 50;
+			yy = Math.floor( yy / 50 ) * 50;
+			var obj = {x:xx,y:yy,width:50,height:50};
+			var canPlace = true;
+			for(var i = 0; i < trees.length; i++){
+				if(collide(trees[i],obj))
+					canPlace = false;
+			}
+			if(canPlace){
+				addTree(xx,yy,"blah");
+			}
 			player.eHeld = true;
 		}
 		else if(player.e == false && player.eHeld == true)
@@ -228,28 +266,37 @@
 	
 	function playDraw(){
 		ctx.clearRect(0,0,can.width, can.height);
+		ctx.drawImage(background,0,0);
+		
+		var xx = player.x + (player.width * 0.5);
+		var yy = player.y + (player.height * 0.5);
+		xx = Math.floor( xx / 50 ) * 50;
+		yy = Math.floor( yy / 50 ) * 50;
+		
+		ctx.fillStyle = "#FFFFCC";
+		ctx.fillRect(xx,yy,50,50);
 		
 		//Center Tree
-		ctx.drawImage(emoTree, 338, 230);
+		//ctx.drawImage(emoTree, 338, 230);
 		
 		//Trees
 		ctx.fillStyle = "#00FF00";
 		for(var i = 0; i < trees.length; i++){
-			//ctx.fillRect(trees[i].x,trees[i].y,trees[i].width,trees[i].height);
 			ctx.drawImage(towerTree,trees[i].x,trees[i].y);
+			//ctx.fillRect(trees[i].x,trees[i].y,trees[i].width,trees[i].height);
 		}
 		
 		//Baddies
-		//ctx.fillStyle = "#FF0000";
+		ctx.fillStyle = "#FF0000";
 		for(var i = 0; i < baddies.length; i++){
-			//ctx.fillRect(baddies[i].x,baddies[i].y,baddies[i].width,baddies[i].height);
 			ctx.drawImage(spider,baddies[i].x,baddies[i].y);
+			ctx.fillRect(baddies[i].x,baddies[i].y,baddies[i].width,baddies[i].height);
 		}
 		
 		//Player
-		//ctx.fillStyle = "#0000FF";
-		//ctx.fillRect(player.x, player.y, player.width, player.height);
+		ctx.fillStyle = "#0000FF";
 		ctx.drawImage(beedog,player.x,player.y);
+		ctx.fillRect(player.x, player.y, player.width, player.height);
 		
 		//Bullets
 		ctx.fillStyle = "#FF0000";
@@ -279,7 +326,10 @@
 		spider.src="face-small.png";
 		beedog.src="beedog.png";
 		emoTree.src="Tree.png";
-		towerTree.src="tree2.png";
+		towerTree.src="TreeNew.png";
+		background.src="Background.png";
+		
+		addTree((can.width * 0.5) - 25, (can.height * 0.5) - 25,"master");
 	}
 	
 	function addBaddie(){
@@ -290,6 +340,9 @@
 			height: 30,
 			speed: 10,
 			health: 100,
+			hitInterval: 1000,
+			hitTime: 1000,
+			damage: 20,
 			};
 		
 		var rand = Math.floor(Math.random() + 0.5);
@@ -321,7 +374,7 @@
 		bullets.push(b);
 	}
 	
-	function addTree(xx,yy,type){
+	function addTree(xx,yy,t){
 		
 		trees.push({
 			x: xx,
@@ -331,6 +384,8 @@
 			WAIT: 2000,
 			timeToWait: 2000,
 			health: 100,
+			range: 200,
+			type: t,
 			bulletToFire: {
 				x: xx - 25,
 				y: yy - 25,
@@ -339,18 +394,18 @@
 				angle: 0,
 				speed: 300,
 				damage: 25
-				},
+				}
 			});
 	}
 	
 	function collide(obj1,obj2){
-		if(obj1.x + obj1.width < obj2.x)
+		if(obj1.x + obj1.width <= obj2.x)
 			return false;
-		if(obj1.y + obj1.height < obj2.y)
+		if(obj1.y + obj1.height <= obj2.y)
 			return false;
-		if(obj2.x + obj2.width < obj1.x)
+		if(obj2.x + obj2.width <= obj1.x)
 			return false;
-		if(obj2.y + obj2.height < obj1.y)
+		if(obj2.y + obj2.height <= obj1.y)
 			return false;
 		
 		return true;
@@ -363,7 +418,7 @@
 	
 	
 	function introUpdate(time){
-	
+		
 	}
 	
 	function introDraw(){
@@ -423,12 +478,40 @@
 			ctx.fillText("Story!",350,500);
 		}
 		
+		ctx.font="30pt Helvetica";
 		ctx.fillText("Game Thingy 1.7!",250,100);
 	}
 	
 	function menuSetup(){
 		update = menuUpdate;
 		draw = menuDraw;
+	}
+	
+	
+	
+	//*****END GAME FUNCTIONS*****
+	
+	
+	
+	function endUpdate(time){
+		endTime -= time;
+		
+		if(endTime <= 0)
+			menuSetup();
+	}
+	
+	function endDraw(){
+		ctx.clearRect(0,0,can.width,can.height);
+		ctx.font = "34pt Helvetica";
+		ctx.fillStyle = "#000000";
+		ctx.fillText("GAME OVER",250,300);
+	}
+	
+	function endSetup(){
+		update = endUpdate;
+		draw = endDraw;
+		
+		endTime = endWaitTime;
 	}
 	
 	
@@ -497,8 +580,15 @@
 				speed: player.bulletToFire.speed,
 				damage: player.bulletToFire.damage,
 			};
-				
+						
 			bul.angle = Math.atan2(mouse.y - player.y - (player.height * 0.5), mouse.x - player.x - (player.width * 0.5));
+			
+			var change = Math.random()*(Math.PI/15) - (Math.PI/30);
+			bul.angle += change;
+			if(bul.angle > Math.PI)
+				bul.angle -= 2*Math.PI;
+			else if(bul.angle < -1.0*Math.PI)
+				bul.angle += 2*Math.PI
 			
 			addBullet(bul);
 			player.timeToWait = player.WAIT;
@@ -541,6 +631,10 @@
 	canvas.onmousemove = function(){setMousePosition(event);};
 	
 	main();
+	
+	/*
+	I will write random notes down here so you may see later on.
+	*/
 	
 	</script>
 </html>
