@@ -25,6 +25,7 @@
 	var draw;
 	var baddieSpawnInterval = 7000;
 	var timeTillBaddieSpawn = 7000;
+	var wallet = 0;
 	
 	var spider = new Image();
 	var beedog = new Image();
@@ -36,6 +37,7 @@
 	var bullets = [];
 	var trees = [];
 	var speechBubbles = [];
+	var pickUp = [];
 	var player = {
 		x: 0,
 		y: 0,
@@ -62,7 +64,7 @@
 		};
 	var mouse = {
 		x: 0,
-		y: 0};
+		y: 0};	
 	var crosshair = {
 		gap: 10,
 		length: 20,
@@ -212,9 +214,21 @@
 			}
 		}
 		
+		//detect if pickUp is picked up add value to wallet, take coin out of array and delete it
+		for(var i = 0; i < pickUp.length; i++){
+			if(collide(pickUp[i],player)){ //collision detection between player and pickUp so pickUp can be picked up
+				pickUp[i].pickedUp = true;
+				wallet += pickUp[i].val;
+				pickUp.splice(i,1);
+				i--;
+				//if we want to add seeds, could add code here?
+			}	
+		}	
+		
 		//deleting baddies that have died.
 		for(var i = 0; i < baddies.length; i++){
 			if(baddies[i].health <= 0){
+				addPickUp(baddies[i].x, baddies[i].y, 20);
 				baddies.splice(i,1);
 				i--;
 			}
@@ -332,6 +346,14 @@
 			ctx.fillText(speechBubbles[i].quote, speechBubbles[i].x - 25, speechBubbles[i].y - 35);
 		}
 		
+		//PickUps
+		ctx.fillStyle = "#FFCC66";
+		for(var k = 0; k < pickUp.length; k++){
+			ctx.fillRect(pickUp[k].x, pickUp[k].y, pickUp[k].width, pickUp[k].height);
+		}
+		//Wallet
+		ctx.fillText("Money: " + wallet, 0, 10);
+		
 		//Crosshair
 		ctx.fillStyle = "#000000";
 		ctx.fillRect(mouse.x - (crosshair.width / 2),mouse.y - crosshair.length - crosshair.gap, crosshair.width, crosshair.length);
@@ -447,6 +469,16 @@
 		}
 	}
 	
+	function addPickUp(xx, yy, val){ //x position, y position, value
+		pickUp.push({
+			x: xx,
+			y: yy,
+			width: 10,
+			height: 10,
+			val: 20,
+			});
+	}
+		
 	function collide(obj1,obj2){
 		if(obj1.x + obj1.width <= obj2.x)
 			return false;
