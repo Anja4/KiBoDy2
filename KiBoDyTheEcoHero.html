@@ -225,10 +225,20 @@
 			}	
 		}	
 		
-		//deleting baddies that have died.
+		//deleting baddies that have died and move coin to screen
 		for(var i = 0; i < baddies.length; i++){
 			if(baddies[i].health <= 0){
-				addPickUp(baddies[i].x, baddies[i].y, 20);
+				var PUx = baddies[i].x; //PUx will be the x of the PickUp
+				var PUy = baddies[i].y;
+				if(PUx < 0)
+					PUx = 0;
+				else if(PUx > can.width - 10)
+					PUx = can.width - 10;//minus the width of the coin
+				if(PUy < 0)
+					PUy = 0;
+				else if(PUy > can.height - 10)
+					PUy = can.height - 10;//minus the height of the coin
+				addPickUp(PUx, PUy, 20);
 				baddies.splice(i,1);
 				i--;
 			}
