@@ -25,6 +25,7 @@
 	var draw;
 	var baddieSpawnInterval = 7000;
 	var timeTillBaddieSpawn = 7000;
+	var wallet = 0;
 	
 	var spider = new Image();
 	var beedog = new Image();
@@ -36,7 +37,11 @@
 	var bullets = [];
 	var trees = [];
 	var speechBubbles = [];
+<<<<<<< HEAD
 	var testVar = 0;
+=======
+	var pickUp = [];
+>>>>>>> economy
 	var player = {
 		x: 0,
 		y: 0,
@@ -63,7 +68,7 @@
 		};
 	var mouse = {
 		x: 0,
-		y: 0};
+		y: 0};	
 	var crosshair = {
 		gap: 10,
 		length: 20,
@@ -72,6 +77,7 @@
 	var go=false;
 	var playButton={x:300,y:350,width:200,height:70}
 	var introButton={x:300,y:450,width:200,height:70}
+	var backButton={x:300,y:350,width:200,height:70}
 	
 	var endWaitTime = 5000;
 	var endTime = 5000;
@@ -191,6 +197,8 @@
 					bul.angle = Math.atan2((baddieCenter.y - treeCenter.y) , (baddieCenter.x - treeCenter.x));
 					addBullet(bul);
 					
+					addSpeechBubble(treeCenter.x,treeCenter.y,"I'm gonna shoot you up!");
+					
 					trees[i].timeToWait += trees[i].WAIT;
 				}
 				else{
@@ -210,16 +218,31 @@
 			}
 		}
 		
+		//detect if pickUp is picked up add value to wallet, take coin out of array and delete it
+		for(var i = 0; i < pickUp.length; i++){
+			if(collide(pickUp[i],player)){ //collision detection between player and pickUp so pickUp can be picked up
+				pickUp[i].pickedUp = true;
+				wallet += pickUp[i].val;
+				pickUp.splice(i,1);
+				i--;
+				//if we want to add seeds, could add code here?
+			}	
+		}	
+		
 		//deleting baddies that have died.
 		for(var i = 0; i < baddies.length; i++){
 			if(baddies[i].health <= 0){
+				addPickUp(baddies[i].x, baddies[i].y, 20);
 				baddies.splice(i,1);
 				i--;
 			}
 		}
 		
-		//deleting trees that have died
+		//deleting trees that have died. also checks for master tree.
+		var mast = false;
 		for(var i = 0; i < trees.length; i++){
+			if(trees[i].type == "master")
+				mast = true;
 			if(trees[i].health <= 0){
 				trees.splice(i,1);
 				i--;
@@ -230,6 +253,15 @@
 		for(var i = 0; i < bullets.length; i++){
 			if(bullets[i].x < -100 || bullets[i].x > can.width + 100 || bullets[i].y < -100 || bullets[i].y > can.height + 100){
 				bullets.splice(i,1);
+				i--;
+			}
+		}
+		
+		//stuff for speech bubbles
+		for(var i = 0; i < speechBubbles.length; i++){
+			speechBubbles[i].timeLeft -= time;
+			if(speechBubbles[i].timeLeft <= 0){
+				speechBubbles.splice(i,1);
 				i--;
 			}
 		}
@@ -263,6 +295,10 @@
 		else if(player.e == false && player.eHeld == true)
 			player.eHeld = false;
 		
+		
+		//game over if master tree died.
+		if(mast == false)
+			endSetup();
 	}
 	
 	function playDraw(){
@@ -305,6 +341,23 @@
 			ctx.fillRect(bullets[j].x,bullets[j].y,bullets[j].width,bullets[j].height);
 		}
 		
+		//SpeechgBubbles
+		ctx.font = "10pt Helvetica";
+		for(var i = 0; i < speechBubbles.length; i++){
+			ctx.fillStyle = "#FFFFFF";
+			ctx.fillRect(speechBubbles[i].x - 30, speechBubbles[i].y - 50, 150, 20);
+			ctx.fillStyle = "#000000";
+			ctx.fillText(speechBubbles[i].quote, speechBubbles[i].x - 25, speechBubbles[i].y - 35);
+		}
+		
+		//PickUps
+		ctx.fillStyle = "#FFCC66";
+		for(var k = 0; k < pickUp.length; k++){
+			ctx.fillRect(pickUp[k].x, pickUp[k].y, pickUp[k].width, pickUp[k].height);
+		}
+		//Wallet
+		ctx.fillText("Money: " + wallet, 0, 10);
+		
 		//Crosshair
 		ctx.fillStyle = "#000000";
 		ctx.fillRect(mouse.x - (crosshair.width / 2),mouse.y - crosshair.length - crosshair.gap, crosshair.width, crosshair.length);
@@ -319,11 +372,17 @@
 	
 	//Starting position
 	function playSetup(){
-		update = playUpdate;
-		draw = playDraw;
-		
-		player.x = 10;
-		player.y = 10;
+		player.x = 385;
+		player.y = 285;
+		baddieSpawnInterval = 7000;
+		if(trees.length > 0)
+			trees.splice(0,trees.length);
+		if(baddies.length > 0)
+			baddies.splice(0,baddies.length);
+		if(bullets.length > 0)
+			bullets.splice(0,bullets.length);
+		if(speechBubbles.length > 0)
+			speechBubbles.splice(0,speechBubbles.length);
 		spider.src="face-small.png";
 		beedog.src="beedog.png";
 		emoTree.src="Tree.png";
@@ -331,6 +390,9 @@
 		background.src="Background.png";
 		
 		addTree((can.width * 0.5) - 25, (can.height * 0.5) - 25,"master");
+		
+		update = playUpdate;
+		draw = playDraw;
 	}
 	
 	function addBaddie(){
@@ -399,6 +461,28 @@
 			});
 	}
 	
+	function addSpeechBubble(xx,yy,q){//xposition, y posistion, quote
+		var num = Math.random()*100;
+		if(num < 5){
+			speechBubbles.push({
+				x: xx,
+				y: yy,
+				quote: q,
+				timeLeft: 3000,
+				});
+		}
+	}
+	
+	function addPickUp(xx, yy, val){ //x position, y position, value
+		pickUp.push({
+			x: xx,
+			y: yy,
+			width: 10,
+			height: 10,
+			val: 20,
+			});
+	}
+		
 	function collide(obj1,obj2){
 		if(obj1.x + obj1.width <= obj2.x)
 			return false;
@@ -433,6 +517,20 @@
 		ctx.fillText("One can't walk but 10 feet without being killed by a Mecha-Mitchell.",100,200)
 		ctx.fillText("Only one man can save the world.",100,250);
 		ctx.fillText("That man is Kibody, the Tree Master.",100,300);
+		
+		ctx.fillStyle = "green";
+		ctx.fillRect(backButton.x,backButton.y,backButton.width,backButton.height);
+		
+		ctx.fillStyle="black";
+		var ms = {x: mouse.x, y: mouse.y, width: 0, height: 0};
+		if(collide(ms,playButton)){
+			ctx.font="34pt Helvetica";
+			ctx.fillText("Back",345,395);
+		}
+		else{
+			ctx.font="30pt Helvetica";
+			ctx.fillText("Back",350,400);
+		}
 	}
 	
 	function introSetup(){
@@ -571,6 +669,11 @@
 	}
 	
 	function handleClick(evt){
+		var ms = {
+				x: mouse.x,
+				y: mouse.y,
+				width: 0,
+				height: 0};
 		if(player.timeToWait <= 0 && update == playUpdate){
 			var bul = {
 				x: player.x + (player.width * 0.5) - (player.bulletToFire.width * 0.5),
@@ -595,15 +698,14 @@
 			player.timeToWait = player.WAIT;
 		}
 		else if(update == menuUpdate){
-			var ms = {
-				x: mouse.x,
-				y: mouse.y,
-				width: 0,
-				height: 0};
 			if(collide(ms,playButton))
 				playSetup();
 			else if(collide(ms,introButton))
 				introSetup();
+		}
+		else if(update == introUpdate){
+			if(collide(ms,backButton))
+				menuSetup();
 		}
 			
 		evt.preventDefault();
