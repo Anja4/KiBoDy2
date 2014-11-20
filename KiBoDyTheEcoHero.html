@@ -191,7 +191,7 @@
 					bul.angle = Math.atan2((baddieCenter.y - treeCenter.y) , (baddieCenter.x - treeCenter.x));
 					addBullet(bul);
 					
-					addSpeechBubble(treeCenter.x,treeCenter.y,"I'm gonna shoot you up!");
+					addSpeechBubble(treeCenter.x,treeCenter.y,trees[i].quote);
 					
 					trees[i].timeToWait += trees[i].WAIT;
 				}
@@ -423,6 +423,7 @@
 			health: 100,
 			range: 200,
 			type: t,
+			quote: "TEST QUOTE",
 			bulletToFire: {
 				x: xx - 25,
 				y: yy - 25,
