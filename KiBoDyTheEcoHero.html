@@ -241,7 +241,7 @@
 					PUy = 0;
 				else if(PUy > can.height - 10)
 					PUy = can.height - 10;//minus the height of the coin
-				addPickUp(PUx, PUy, 20);
+				addPickUp(PUx, PUy, 20); //temporary value of 20 (later, different baddies can drop more money?)
 				baddies.splice(i,1);
 				i--;
 			}
@@ -489,7 +489,7 @@
 			y: yy,
 			width: 10,
 			height: 10,
-			val: 20,
+			val: val,
 			});
 	}
 		
@@ -781,6 +781,9 @@
 	brute, but also dumb.
 	+has a crazy amount of health. Meant to stop enemies from moving.
 	-weak attack.
+	
+	Notes:
+	I want to look through the update function. There is some repeditive and un-needed code that can be simplified. It will also make the program run faster.
 	
 	:D
 	*/
