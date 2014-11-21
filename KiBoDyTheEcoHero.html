@@ -26,7 +26,9 @@
 	var baddieSpawnInterval = 7000;
 	var timeTillBaddieSpawn = 7000;
 	var wallet = 0;
-	var imported = [];//work from here
+	var jsonFile= [];
+	var unlocked = [];//booleans for what trees we have collected seeds for.
+	var type = 0;//type we are trying to plant.
 	
 	var spider = new Image();
 	var beedog = new Image();
@@ -727,10 +729,10 @@
 	}
 	//****End handling buttons being pressed**
 		
-	function loadJSON(callback) {
+	function loadJSON(callback) {//not working?
 			var xhr = new XMLHttpRequest();
 			xhr.overrideMimeType("application/json");
-			xhr.open('GET', 'rectangles.json', true);
+			xhr.open('GET', 'jsonTrees.json', true);
 			xhr.onreadystatechange = function () {
 				if (xhr.readyState == 4 && xhr.status == "200") {
 					callback(xhr.responseText);
@@ -743,7 +745,9 @@
 	function main(){
 		ctx = document.getElementById('canvas').getContext("2d");
 		loadJSON( function(data){
-			= JSON.parse(data)});
+			jsonFile = JSON.parse(data);
+			});
+		console.log(jsonFile[0].health + "");
 		menuSetup();
 		
 		window.requestAnimationFrame(tick);
@@ -759,6 +763,24 @@
 	
 	/*
 	I will write random notes down here so you may see later on.
+	
+	List of trees (in order that they are on the json file)
+	*master
+	acts like a superior king of all beings.
+	
+	*manufactured
+	default, basic tree. this is used as a basis of comparison for all other trees.
+	
+	*oak
+	afraid of spiders.
+	-has very close range
+	-he takes a super long time to recharge after each shot. If caught off guard, this tree can die easily.
+	+shoots a very powerful shot.
+	
+	*petrified
+	brute, but also dumb.
+	+has a crazy amount of health. Meant to stop enemies from moving.
+	-weak attack.
 	
 	:D
 	*/
