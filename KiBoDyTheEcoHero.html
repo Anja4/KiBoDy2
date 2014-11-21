@@ -35,6 +35,7 @@
 	var emoTree = new Image();
 	var towerTree = new Image();
 	var background = new Image();
+	var coin = new Image();
 	
 	var baddies = [];
 	var bullets = [];
@@ -336,7 +337,7 @@
 		ctx.fillStyle = "#FF0000";
 		for(var i = 0; i < baddies.length; i++){
 			ctx.drawImage(spider,baddies[i].x,baddies[i].y);
-			ctx.fillRect(baddies[i].x,baddies[i].y,baddies[i].width,baddies[i].height);
+			//ctx.fillRect(baddies[i].x,baddies[i].y,baddies[i].width,baddies[i].height);
 		}
 		
 		//Player
@@ -362,7 +363,8 @@
 		//PickUps
 		ctx.fillStyle = "#FFCC66";
 		for(var k = 0; k < pickUp.length; k++){
-			ctx.fillRect(pickUp[k].x, pickUp[k].y, pickUp[k].width, pickUp[k].height);
+			ctx.drawImage(coin,pickUp[k].x,pickUp[k].y);
+			//ctx.fillRect(pickUp[k].x, pickUp[k].y, pickUp[k].width, pickUp[k].height);
 		}
 		//Wallet
 		ctx.fillText("Money: " + wallet, 0, 10);
@@ -392,11 +394,12 @@
 			bullets.splice(0,bullets.length);
 		if(speechBubbles.length > 0)
 			speechBubbles.splice(0,speechBubbles.length);
-		spider.src="face-small.png";
+		spider.src="Baddie.png";
 		beedog.src="beedog.png";
 		emoTree.src="Tree.png";
 		towerTree.src="TreeNew.png";
 		background.src="Background.png";
+		coin.src="Coin.png";
 		
 		addTree((can.width * 0.5) - 25, (can.height * 0.5) - 25,"master");
 		
@@ -744,9 +747,9 @@
 	
 	function main(){
 		ctx = document.getElementById('canvas').getContext("2d");
-		/*loadJSON( function(data){
+		loadJSON( function(data){
 			jsonFile = JSON.parse(data);
-			});*/
+			});
 		//console.log(jsonFile[0].health + "");
 		menuSetup();
 		
