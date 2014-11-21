@@ -231,8 +231,8 @@
 		//deleting baddies that have died and move coin to screen
 		for(var i = 0; i < baddies.length; i++){
 			if(baddies[i].health <= 0){
-				var PUx = baddies[i].x; //PUx will be the x of the PickUp
-				var PUy = baddies[i].y;
+				var PUx = baddies[i].x + (baddies[i].width * 0.5) - 5; //PUx will be the x of the PickUp
+				var PUy = baddies[i].y + (baddies[i].height * 0.5) - 5;
 				if(PUx < 0)
 					PUx = 0;
 				else if(PUx > can.width - 10)
@@ -744,10 +744,10 @@
 	
 	function main(){
 		ctx = document.getElementById('canvas').getContext("2d");
-		loadJSON( function(data){
+		/*loadJSON( function(data){
 			jsonFile = JSON.parse(data);
-			});
-		console.log(jsonFile[0].health + "");
+			});*/
+		//console.log(jsonFile[0].health + "");
 		menuSetup();
 		
 		window.requestAnimationFrame(tick);
