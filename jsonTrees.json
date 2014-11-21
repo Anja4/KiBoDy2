@@ -1,0 +1,88 @@
+[ 
+	{
+		"x" : 0, 
+		"y" : 0, 
+		"width" : 50, 
+		"height" : 50, 
+		"WAIT" : 2000, 
+		"timeToWait" : 2000, 
+		"health" : 300, 
+		"range" : 0, 
+		"type" : "master", 
+		"quote" : "I AM YOUR GOD!", 
+		"bulletToFire" : {
+			"x" : 0, 
+			"y" : 0, 
+			"width": 5, 
+			"height" : 5, 
+			"angle" : 0, 
+			"speed" : 300, 
+			"damage" : 0
+			}
+	}, 
+	{
+		"x" : 0, 
+		"y" : 0, 
+		"width" : 50, 
+		"height" : 50, 
+		"WAIT" : 2000, 
+		"timeToWait" : 2000, 
+		"health" : 100, 
+		"range" : 200, 
+		"type" : "manufactured", 
+		"quote" : "~Virus ~ Detected~",  
+		"bulletToFire" : {
+			"x" : 0, 
+			"y" : 0, 
+			"width": 5, 
+			"height" : 5, 
+			"angle" : 0, 
+			"speed" : 300, 
+			"damage" : 25
+			}
+	}, 
+	{
+		
+		"x" : 0, 
+		"y" : 0, 
+		"width" : 50, 
+		"height" : 50, 
+		"WAIT" : 10000, 
+		"timeToWait" : 10000, 
+		"health" : 100, 
+		"range" : 75, 
+		"type" : "oak", 
+		"quote" : "Ew! A spider!",  
+		"bulletToFire" : {
+			"x" : 0, 
+			"y" : 0, 
+			"width": 5, 
+			"height" : 5, 
+			"angle" : 0, 
+			"speed" : 300, 
+			"damage" : 80
+			}
+	}, 
+	{
+		"x" : 0, 
+		"y" : 0, 
+		"width" : 50, 
+		"height" : 50, 
+		"WAIT" : 2000, 
+		"timeToWait" : 2000, 
+		"health" : 500, 
+		"range" : 100, 
+		"type" : "petrified", 
+		"quote" : "That tickles.", 
+		"bulletToFire" : {
+			"x" : 0, 
+			"y" : 0, 
+			"width": 5, 
+			"height" : 5, 
+			"angle" : 0, 
+			"speed" : 300, 
+			"damage" : 5
+			}
+	}
+		
+]
