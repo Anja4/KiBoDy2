@@ -121,6 +121,20 @@
 		if(player.timeToWait < 0)
 			player.timeToWait = 0;
 		
+		//******This code moves the bullets*****
+		//It also deletes them if they are significantly outside the boundries.
+		for(var i = 0; i < bullets.length; i++){
+			var xx = can.width / 2;
+			var yy = can.height / 2;
+			bullets[i].x += Math.cos(bullets[i].angle) * bullets[i].speed * time * 0.001;
+			bullets[i].y += Math.sin(bullets[i].angle) * bullets[i].speed * time * 0.001;
+			
+			if(bullets[i].x < -100 || bullets[i].x > can.width + 100 || bullets[i].y < -100 || bullets[i].y > can.height + 100){
+				bullets.splice(i,1);
+				i--;
+			}
+		}
+		
 		//*****This code moves all the baddies*****
 		for(var i = 0; i < baddies.length; i++){
 			var col = -1;
@@ -144,14 +158,14 @@
 				trees[col].health -= baddies[i].damage;
 				baddies[i].hitTime = baddies[i].hitInterval;
 			}
-		}
-		
-		//******This code moves the bullets*****
-		for(var i = 0; i < bullets.length; i++){
-			var xx = can.width / 2;
-			var yy = can.height / 2;
-			bullets[i].x += Math.cos(bullets[i].angle) * bullets[i].speed * time * 0.001;
-			bullets[i].y += Math.sin(bullets[i].angle) * bullets[i].speed * time * 0.001;
+			
+			for(var j = 0; j < bullets.length; j++){//collision detection between bullets and baddies
+				if(collide(baddies[i],bullets[j])){
+					baddies[i].health -= bullets[j].damage;
+					bullets.splice(j,1);
+					j--;
+				}
+			}
 		}
 		
 		//*****This code makes the trees shoot at baddies
@@ -205,17 +219,6 @@
 			}
 		}
 		
-		//collision detection between baddies and bullets
-		for(var i = 0; i < baddies.length; i++){
-			for(var j = 0; j < bullets.length; j++){
-				if(collide(baddies[i],bullets[j])){
-					baddies[i].health -= bullets[j].damage;
-					bullets.splice(j,1);
-					j--;
-				}
-			}
-		}
-		
 		//detect if pickUp is picked up add value to wallet, take coin out of array and delete it
 		for(var i = 0; i < pickUp.length; i++){
 			if(collide(pickUp[i],player)){ //collision detection between player and pickUp so pickUp can be picked up
@@ -253,14 +256,6 @@
 				mast = true;
 			if(trees[i].health <= 0){
 				trees.splice(i,1);
-				i--;
-			}
-		}
-		
-		//deleting bullets significantly outside of canvas
-		for(var i = 0; i < bullets.length; i++){
-			if(bullets[i].x < -100 || bullets[i].x > can.width + 100 || bullets[i].y < -100 || bullets[i].y > can.height + 100){
-				bullets.splice(i,1);
 				i--;
 			}
 		}
