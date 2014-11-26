@@ -19,8 +19,6 @@
 	var lastTickTime = 0;
 	var UPDATEINTERVAL = 1000 / 50;
 	var accumulate = 0;
-	var GAME = 0;
-	var MENU = -1;
 	var update;
 	var draw;
 	var baddieSpawnInterval = 7000;
@@ -747,9 +745,9 @@
 	
 	function main(){
 		ctx = document.getElementById('canvas').getContext("2d");
-		loadJSON( function(data){
+		/*loadJSON( function(data){
 			jsonFile = JSON.parse(data);
-			});
+			});*/
 		//console.log(jsonFile[0].health + "");
 		menuSetup();
 		
