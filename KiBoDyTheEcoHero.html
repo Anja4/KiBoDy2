@@ -26,7 +26,16 @@
 	var wallet = 0;
 	var STORAGE;
 	var QUOTES;
-	var unlocked = [];//booleans for what trees we have collected seeds for.
+	var unlocked = [
+		{ value: true, type: "manufactured"},
+		{ value: true, type: "oak"},
+		{ value: true, type: "petrified"},
+		];
+		/*for now, I set all of these values to true for testing purposes. Here is what it is supposed to be:
+		the first value in the array should always be true (this means you can always place manufactured trees.)
+		the other values in the array should start out as false, but picking up a seed will turn a random one (that is currently false) to true
+		when you press the "switch types" button, it will change to "types" variable to the index of the next true value in this array.*/
+	
 	var type = 0;//type we are trying to plant.
 	
 	var spider = new Image();
@@ -54,6 +63,8 @@
 		right: false,
 		e: false,
 		eHeld: false,
+		q: false,
+		qHeld: false,
 		WAIT: 150,
 		timeToWait: 1,
 		bulletToFire: {
@@ -280,6 +291,18 @@
 			timeTillBaddieSpawn = baddieSpawnInterval;
 		}
 		
+		//changing the type of tree the player wants to place
+		if(player.q && player.qHeld == false){
+			do{
+				type++;
+				if(type >= unlocked.length)
+					type = 0;
+			}while(unlocked[type].value == false);
+			player.qHeld = true;
+		}
+		if(player.q == false && player.qHeld)
+			player.qHeld = false;
+		
 		//making trees
 		if(player.e == true && player.eHeld == false){
 			var xx = player.x + (player.width * 0.5);
@@ -292,14 +315,14 @@
 				if(collide(trees[i],obj))
 					canPlace = false;
 			}
-			if(canPlace){
-				addTree(xx,yy,"manufactured");
+			if(canPlace){//add to this if statement so that it doesn't allow placing trees if they don't have enough money.
+				//add a line here to subtract money according to the cost of the tree they planted.
+				addTree(xx,yy,unlocked[type].type);
 			}
 			player.eHeld = true;
 		}
-		else if(player.e == false && player.eHeld == true)
+		if(player.e == false && player.eHeld == true)
 			player.eHeld = false;
-		
 		
 		//game over if master tree died.
 		if(mast == false)
@@ -325,7 +348,8 @@
 		ctx.fillStyle = "#00FF00";
 		for(var i = 0; i < trees.length; i++){
 			ctx.drawImage(towerTree,trees[i].x,trees[i].y);
-			//ctx.fillRect(trees[i].x,trees[i].y,trees[i].width,trees[i].height);
+			if(trees[i].type != "manufactured")
+				ctx.fillRect(trees[i].x,trees[i].y,trees[i].width,trees[i].height);
 		}
 		
 		//Baddies
@@ -364,6 +388,10 @@
 		//Wallet
 		ctx.fillText("Money: " + wallet, 0, 10);
 		
+		//Type of Tree that you will plant
+		ctx.fillStyle = "#BB9999";
+		ctx.fillText(unlocked[type].type,580,10);
+		
 		//Crosshair
 		ctx.fillStyle = "#000000";
 		ctx.fillRect(mouse.x - (crosshair.width / 2),mouse.y - crosshair.length - crosshair.gap, crosshair.width, crosshair.length);
@@ -374,6 +402,7 @@
 		//Things below this line are used for bug fixing.
 		ctx.fillStyle = "#000000";
 		//ctx.fillText(bullets.length + "",0,10);
+		//ctx.fillText(type + "", 0, 10);
 	}
 	
 	//Starting position
@@ -445,7 +474,7 @@
 		bullets.push(b);
 	}
 	
-	function addTree(xx,yy,t){
+	function addTree(xx,yy,t){//x and y position. the "t" is a string, indicating the type of tree
 		var OBJ;
 		
 		switch(t){
@@ -687,6 +716,8 @@
 			player.right = true;
 		if(evt.keyCode == 69)//e
 			player.e = true;
+		if(evt.keyCode == 81)//q?
+			player.q = true;
 			
 		if(65 <= evt.keyCode && evt.keyCode >= 90)
 			evt.preventDefault();
@@ -703,6 +734,8 @@
 			player.right = false;
 		if(evt.keyCode == 69)//e
 			player.e = false;
+		if(evt.keyCode == 81)//q?
+			player.q = false;
 			
 		if(65 <= evt.keyCode && evt.keyCode >= 90)
 			evt.preventDefault();
