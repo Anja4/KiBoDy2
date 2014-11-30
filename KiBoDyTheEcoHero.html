@@ -315,8 +315,8 @@
 				if(collide(trees[i],obj))
 					canPlace = false;
 			}
-			if(canPlace){//add to this if statement so that it doesn't allow placing trees if they don't have enough money.
-				//add a line here to subtract money according to the cost of the tree they planted.
+			if(canPlace && wallet >= getTreeByType(unlocked[type].type).cost){
+				wallet -= getTreeByType(unlocked[type].type).cost;
 				addTree(xx,yy,unlocked[type].type);
 			}
 			player.eHeld = true;
@@ -475,22 +475,7 @@
 	}
 	
 	function addTree(xx,yy,t){//x and y position. the "t" is a string, indicating the type of tree
-		var OBJ;
-		
-		switch(t){
-			case "master":
-				OBJ = STORAGE.master;
-				break;
-			case "manufactured":
-				OBJ = STORAGE.manufactured;
-				break;
-			case "oak":
-				OBJ = STORAGE.oak;
-				break;
-			case "petrified":
-				OBJ = STORAGE.petrified;
-				break;
-		}
+		var OBJ = getTreeByType(t);
 		
 		trees.push({
 			x: xx,
@@ -563,6 +548,27 @@
 			return false;
 		
 		return true;
+	}
+	
+	function getTreeByType(t){//This function takes in a string name, and returns the adress to the storage version of a tree. This is NOT an actual tree object, it is a static tree.
+		var OBJ;
+		
+		switch(t){
+			case "master":
+				OBJ = STORAGE.master;
+				break;
+			case "manufactured":
+				OBJ = STORAGE.manufactured;
+				break;
+			case "oak":
+				OBJ = STORAGE.oak;
+				break;
+			case "petrified":
+				OBJ = STORAGE.petrified;
+				break;
+		}
+		
+		return OBJ;
 	}
 	
 	
@@ -820,6 +826,7 @@
 				health: 300,
 				range: 0,
 				type: "master",
+				cost: 1000,
 				bulletToFire: {
 					x: 0,
 					y: 0,
@@ -841,6 +848,7 @@
 				health: 100,
 				range: 200,
 				type: "manufactured",
+				cost: 300,
 				bulletToFire: {
 					x: 0,
 					y: 0,
@@ -862,6 +870,7 @@
 				health: 100,
 				range: 75,
 				type: "oak",
+				cost: 500,
 				bulletToFire: {
 					x: 0,
 					y: 0,
@@ -883,6 +892,7 @@
 				health: 500,
 				range: 100,
 				type: "petrified",
+				cost: 300,
 				bulletToFire: {
 					x: 0,
 					y: 0,
