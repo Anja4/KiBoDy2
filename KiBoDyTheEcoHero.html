@@ -40,7 +40,6 @@
 	
 	var spider = new Image();
 	var beedog = new Image();
-	var emoTree = new Image();
 	var towerTree = new Image();
 	var background = new Image();
 	var coin = new Image();
@@ -183,6 +182,10 @@
 		//*****This code makes the trees shoot at baddies
 		for(var i = 0; i < trees.length; i++){
 			
+			//refills clip if the player is touching the tree.
+			if(collide(trees[i],player))
+				trees[i].clip = getTreeByType(trees[i].type).clip;
+			
 			var treeCenter = {
 				x: trees[i].x + (trees[i].width * 0.5),
 				y: trees[i].y + (trees[i].height * 0.5)};
@@ -205,14 +208,14 @@
 						distance = curDist;
 					}
 				}
-				if(index != -1 && distance <= trees[i].range){
+				if(index != -1 && distance <= trees[i].range && trees[i].clip > 0){
 					var baddieCenter = {
 						x: baddies[index].x + (baddies[index].width * 0.5),
 						y: baddies[index].y + (baddies[index].height * 0.5),
 						};
 					var bul = {//The reason why it imports each individual variable is to create a copy of the record, instead of using the reference
-						x: treeCenter.x,
-						y: treeCenter.y,
+						x: treeCenter.x - (trees[i].bulletToFire.width * 0.5),
+						y: treeCenter.y - (trees[i].bulletToFire.height * 0.5),
 						width: trees[i].bulletToFire.width,
 						height: trees[i].bulletToFire.height,
 						angle: trees[i].bulletToFire.angle,
@@ -224,7 +227,8 @@
 					if(Math.random() <= 0.05)
 						addSpeechBubble(treeCenter.x,treeCenter.y,trees[i].type);
 					
-					trees[i].timeToWait += trees[i].WAIT;
+					trees[i].timeToWait += getTreeByType(trees[i].type).timeToWait;
+					trees[i].clip--;
 				}
 				else{
 					trees[i].timeToWait += time;
@@ -341,15 +345,20 @@
 		ctx.fillStyle = "#FFFFCC";
 		ctx.fillRect(xx,yy,50,50);
 		
-		//Center Tree
-		//ctx.drawImage(emoTree, 338, 230);
-		
 		//Trees
 		ctx.fillStyle = "#00FF00";
 		for(var i = 0; i < trees.length; i++){
 			ctx.drawImage(towerTree,trees[i].x,trees[i].y);
-			if(trees[i].type != "manufactured")
-				ctx.fillRect(trees[i].x,trees[i].y,trees[i].width,trees[i].height);
+			//ctx.fillRect(trees[i].x,trees[i].y,trees[i].width,trees[i].height);
+			ctx.fillStyle = "#00AA00";
+			ctx.fillRect(trees[i].x+5,trees[i].y+5,(trees[i].health / getTreeByType(trees[i].type).health) * 40,5);
+			ctx.fillStyle = "#0000AA";
+			var t = getTreeByType(trees[i].type);
+			var w = t.timeToWait;
+			ctx.fillRect(trees[i].x+5,trees[i].y+10,((w - trees[i].timeToWait) / w) * 40,5);
+			ctx.fillStyle = "#AA0000";
+			var c = t.clip;
+			ctx.fillRect(trees[i].x+5,trees[i].y+15, (trees[i].clip / c) * 40,5);
 		}
 		
 		//Baddies
@@ -418,12 +427,8 @@
 			bullets.splice(0,bullets.length);
 		if(speechBubbles.length > 0)
 			speechBubbles.splice(0,speechBubbles.length);
-		spider.src="Baddie.png";
-		beedog.src="beedog.png";
-		emoTree.src="Tree.png";
-		towerTree.src="TreeNew.png";
-		background.src="Background.png";
-		coin.src="Coin.png";
+		if(pickUp.length > 0)
+			pickUp.splice(0,pickUp.length);
 		
 		addTree((can.width * 0.5) - 25, (can.height * 0.5) - 25,"master");
 		addSpeechBubble((can.width * 0.5) - 25, (can.height * 0.5) - 25,"master");
@@ -482,7 +487,6 @@
 			y: yy,
 			width: 50,
 			height: 50,
-			WAIT: OBJ.WAIT,
 			timeToWait: OBJ.timeToWait,
 			health: OBJ.health,
 			range: OBJ.range,
@@ -813,6 +817,13 @@
 	
 	function main(){
 		ctx = document.getElementById('canvas').getContext("2d");
+		//importing photos
+		spider.src="Baddie.png";
+		beedog.src="beedog.png";
+		towerTree.src="TreeNew.png";
+		background.src="Background.png";
+		coin.src="Coin.png";
+		
 		
 		//Here, I add all of the items into the "STORAGE" variable.
 		STORAGE = {
@@ -821,8 +832,8 @@
 				y: 0,
 				width: 50,
 				height: 50,
-				WAIT: 2000,
 				timeToWait: 2000,
+				clip: 0,
 				health: 300,
 				range: 0,
 				type: "master",
@@ -843,8 +854,8 @@
 				y: 0,
 				width: 50,
 				height: 50,
-				WAIT: 2000,
 				timeToWait: 2000,
+				clip: 20,
 				health: 100,
 				range: 200,
 				type: "manufactured",
@@ -865,10 +876,10 @@
 				y: 0,
 				width: 50,
 				height: 50,
-				WAIT: 10000,
 				timeToWait: 10000,
+				clip: 6,
 				health: 100,
-				range: 75,
+				range: 125,
 				type: "oak",
 				cost: 500,
 				bulletToFire: {
@@ -887,8 +898,8 @@
 				y: 0,
 				width: 50,
 				height: 50,
-				WAIT: 2000,
-				timeToWait: 2000,
+				timeToWait: 1000,
+				clip: 40,
 				health: 500,
 				range: 100,
 				type: "petrified",
