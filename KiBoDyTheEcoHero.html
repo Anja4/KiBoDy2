@@ -40,9 +40,10 @@
 	
 	var spider = new Image();
 	var beedog = new Image();
-	var towerTree = new Image();
+	var treeImage = new Image();
 	var background = new Image();
 	var coin = new Image();
+	var leaf = new Image();
 	
 	var baddies = [];
 	var bullets = [];
@@ -342,41 +343,64 @@
 		xx = Math.floor( xx / 50 ) * 50;
 		yy = Math.floor( yy / 50 ) * 50;
 		
-		ctx.fillStyle = "#FFFFCC";
+		//ctx.fillStyle = "#FFFFCC";
+		ctx.fillStyle = 'rgba(255,255,200,0.2)';
 		ctx.fillRect(xx,yy,50,50);
 		
 		//Trees
 		ctx.fillStyle = "#00FF00";
 		for(var i = 0; i < trees.length; i++){
-			ctx.drawImage(towerTree,trees[i].x,trees[i].y);
-			//ctx.fillRect(trees[i].x,trees[i].y,trees[i].width,trees[i].height);
-			ctx.fillStyle = "#00AA00";
-			ctx.fillRect(trees[i].x+5,trees[i].y+5,(trees[i].health / getTreeByType(trees[i].type).health) * 40,5);
-			ctx.fillStyle = "#0000AA";
+			ctx.fillStyle ="#00FF00";
+			if(trees[i].type == "master")
+				ctx.drawImage(treeImage,0,0,50,50,trees[i].x,trees[i].y,50,50);
+			else if(trees[i].type == "manufactured")
+				ctx.drawImage(treeImage,50,0,50,50,trees[i].x,trees[i].y,50,50);
+			else if(trees[i].type == "oak")
+				ctx.drawImage(treeImage,100,0,50,50,trees[i].x,trees[i].y,50,50);
+			else
+				ctx.fillRect(trees[i].x,trees[i].y,trees[i].width,trees[i].height);
+			
+			
+			
+			ctx.fillStyle = 'rgba(0,255,0,0.3)';
+			ctx.fillRect(trees[i].x+5,trees[i].y+47,(trees[i].health / getTreeByType(trees[i].type).health) * 40,3);
+			ctx.fillStyle = 'rgba(0,0,255,0.3)';
 			var t = getTreeByType(trees[i].type);
 			var w = t.timeToWait;
-			ctx.fillRect(trees[i].x+5,trees[i].y+10,((w - trees[i].timeToWait) / w) * 40,5);
-			ctx.fillStyle = "#AA0000";
+			ctx.fillRect(trees[i].x+5,trees[i].y+44,((w - trees[i].timeToWait) / w) * 40,3);
+			ctx.fillStyle = 'rgba(255,0,0,0.3)';
 			var c = t.clip;
-			ctx.fillRect(trees[i].x+5,trees[i].y+15, (trees[i].clip / c) * 40,5);
+			ctx.fillRect(trees[i].x+5,trees[i].y+41, (trees[i].clip / c) * 40,3);
 		}
 		
 		//Baddies
 		ctx.fillStyle = "#FF0000";
 		for(var i = 0; i < baddies.length; i++){
-			ctx.drawImage(spider,baddies[i].x,baddies[i].y);
+			var nx = Math.floor(baddies[i].x + 0.5);
+			var ny = Math.floor(baddies[i].y + 0.5);
+			ctx.drawImage(spider,nx,ny);
 			//ctx.fillRect(baddies[i].x,baddies[i].y,baddies[i].width,baddies[i].height);
 		}
 		
 		//Player
 		ctx.fillStyle = "#0000FF";
-		ctx.drawImage(beedog,player.x,player.y);
-		ctx.fillRect(player.x, player.y, player.width, player.height);
+		var nx = Math.floor(player.x + 0.5);
+		var ny = Math.floor(player.y + 0.5);
+		if(player.left)
+			ctx.drawImage(beedog,0,0,30,30,nx,ny,30,30);
+		else if(player.right)
+			ctx.drawImage(beedog,30,0,30,30,nx,ny,30,30);
+		else if(player.up)
+			ctx.drawImage(beedog,90,0,30,30,nx,ny,30,30);
+		else
+			ctx.drawImage(beedog,60,0,30,30,nx,ny,30,30);
+		//ctx.fillRect(player.x, player.y, player.width, player.height);
 		
 		//Bullets
 		ctx.fillStyle = "#FF0000";
 		for(var j = 0; j < bullets.length; j++){
-			ctx.fillRect(bullets[j].x,bullets[j].y,bullets[j].width,bullets[j].height);
+			ctx.drawImage(leaf,bullets[j].x,bullets[j].y);
+			//ctx.fillRect(bullets[j].x,bullets[j].y,bullets[j].width,bullets[j].height);
 		}
 		
 		//SpeechgBubbles
@@ -819,10 +843,11 @@
 		ctx = document.getElementById('canvas').getContext("2d");
 		//importing photos
 		spider.src="Baddie.png";
-		beedog.src="beedog.png";
-		towerTree.src="TreeNew.png";
+		beedog.src="BeeDog.png";
+		treeImage.src="Trees.png";
 		background.src="Background.png";
 		coin.src="Coin.png";
+		leaf.src="Leaf.png";
 		
 		
 		//Here, I add all of the items into the "STORAGE" variable.
