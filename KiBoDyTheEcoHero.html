@@ -19,20 +19,31 @@
 	var lastTickTime = 0;
 	var UPDATEINTERVAL = 1000 / 50;
 	var accumulate = 0;
-	var GAME = 0;
-	var MENU = -1;
 	var update;
 	var draw;
 	var baddieSpawnInterval = 7000;
 	var timeTillBaddieSpawn = 7000;
 	var wallet = 0;
-	var imported = [];//work from here
+	var STORAGE;
+	var QUOTES;
+	var unlocked = [
+		{ value: true, type: "manufactured"},
+		{ value: true, type: "oak"},
+		{ value: true, type: "petrified"},
+		];
+		/*for now, I set all of these values to true for testing purposes. Here is what it is supposed to be:
+		the first value in the array should always be true (this means you can always place manufactured trees.)
+		the other values in the array should start out as false, but picking up a seed will turn a random one (that is currently false) to true
+		when you press the "switch types" button, it will change to "types" variable to the index of the next true value in this array.*/
+	
+	var type = 0;//type we are trying to plant.
 	
 	var spider = new Image();
 	var beedog = new Image();
-	var emoTree = new Image();
-	var towerTree = new Image();
+	var treeImage = new Image();
 	var background = new Image();
+	var coin = new Image();
+	var leaf = new Image();
 	
 	var baddies = [];
 	var bullets = [];
@@ -52,6 +63,8 @@
 		right: false,
 		e: false,
 		eHeld: false,
+		q: false,
+		qHeld: false,
 		WAIT: 150,
 		timeToWait: 1,
 		bulletToFire: {
@@ -120,6 +133,20 @@
 		if(player.timeToWait < 0)
 			player.timeToWait = 0;
 		
+		//******This code moves the bullets*****
+		//It also deletes them if they are significantly outside the boundries.
+		for(var i = 0; i < bullets.length; i++){
+			var xx = can.width / 2;
+			var yy = can.height / 2;
+			bullets[i].x += Math.cos(bullets[i].angle) * bullets[i].speed * time * 0.001;
+			bullets[i].y += Math.sin(bullets[i].angle) * bullets[i].speed * time * 0.001;
+			
+			if(bullets[i].x < -100 || bullets[i].x > can.width + 100 || bullets[i].y < -100 || bullets[i].y > can.height + 100){
+				bullets.splice(i,1);
+				i--;
+			}
+		}
+		
 		//*****This code moves all the baddies*****
 		for(var i = 0; i < baddies.length; i++){
 			var col = -1;
@@ -143,18 +170,22 @@
 				trees[col].health -= baddies[i].damage;
 				baddies[i].hitTime = baddies[i].hitInterval;
 			}
-		}
-		
-		//******This code moves the bullets*****
-		for(var i = 0; i < bullets.length; i++){
-			var xx = can.width / 2;
-			var yy = can.height / 2;
-			bullets[i].x += Math.cos(bullets[i].angle) * bullets[i].speed * time * 0.001;
-			bullets[i].y += Math.sin(bullets[i].angle) * bullets[i].speed * time * 0.001;
+			
+			for(var j = 0; j < bullets.length; j++){//collision detection between bullets and baddies
+				if(collide(baddies[i],bullets[j])){
+					baddies[i].health -= bullets[j].damage;
+					bullets.splice(j,1);
+					j--;
+				}
+			}
 		}
 		
 		//*****This code makes the trees shoot at baddies
 		for(var i = 0; i < trees.length; i++){
+			
+			//refills clip if the player is touching the tree.
+			if(collide(trees[i],player))
+				trees[i].clip = getTreeByType(trees[i].type).clip;
 			
 			var treeCenter = {
 				x: trees[i].x + (trees[i].width * 0.5),
@@ -178,14 +209,14 @@
 						distance = curDist;
 					}
 				}
-				if(index != -1 && distance <= trees[i].range){
+				if(index != -1 && distance <= trees[i].range && trees[i].clip > 0){
 					var baddieCenter = {
 						x: baddies[index].x + (baddies[index].width * 0.5),
 						y: baddies[index].y + (baddies[index].height * 0.5),
 						};
 					var bul = {//The reason why it imports each individual variable is to create a copy of the record, instead of using the reference
-						x: treeCenter.x,
-						y: treeCenter.y,
+						x: treeCenter.x - (trees[i].bulletToFire.width * 0.5),
+						y: treeCenter.y - (trees[i].bulletToFire.height * 0.5),
 						width: trees[i].bulletToFire.width,
 						height: trees[i].bulletToFire.height,
 						angle: trees[i].bulletToFire.angle,
@@ -194,23 +225,14 @@
 					bul.angle = Math.atan2((baddieCenter.y - treeCenter.y) , (baddieCenter.x - treeCenter.x));
 					addBullet(bul);
 					
-					addSpeechBubble(treeCenter.x,treeCenter.y,trees[i].quote);
+					if(Math.random() <= 0.05)
+						addSpeechBubble(treeCenter.x,treeCenter.y,trees[i].type);
 					
-					trees[i].timeToWait += trees[i].WAIT;
+					trees[i].timeToWait += getTreeByType(trees[i].type).timeToWait;
+					trees[i].clip--;
 				}
 				else{
 					trees[i].timeToWait += time;
-				}
-			}
-		}
-		
-		//collision detection between baddies and bullets
-		for(var i = 0; i < baddies.length; i++){
-			for(var j = 0; j < bullets.length; j++){
-				if(collide(baddies[i],bullets[j])){
-					baddies[i].health -= bullets[j].damage;
-					bullets.splice(j,1);
-					j--;
 				}
 			}
 		}
@@ -229,8 +251,8 @@
 		//deleting baddies that have died and move coin to screen
 		for(var i = 0; i < baddies.length; i++){
 			if(baddies[i].health <= 0){
-				var PUx = baddies[i].x; //PUx will be the x of the PickUp
-				var PUy = baddies[i].y;
+				var PUx = baddies[i].x + (baddies[i].width * 0.5) - 5; //PUx will be the x of the PickUp
+				var PUy = baddies[i].y + (baddies[i].height * 0.5) - 5;
 				if(PUx < 0)
 					PUx = 0;
 				else if(PUx > can.width - 10)
@@ -239,7 +261,7 @@
 					PUy = 0;
 				else if(PUy > can.height - 10)
 					PUy = can.height - 10;//minus the height of the coin
-				addPickUp(PUx, PUy, 20);
+				addPickUp(PUx, PUy, 20); //temporary value of 20 (later, different baddies can drop more money?)
 				baddies.splice(i,1);
 				i--;
 			}
@@ -252,14 +274,6 @@
 				mast = true;
 			if(trees[i].health <= 0){
 				trees.splice(i,1);
-				i--;
-			}
-		}
-		
-		//deleting bullets significantly outside of canvas
-		for(var i = 0; i < bullets.length; i++){
-			if(bullets[i].x < -100 || bullets[i].x > can.width + 100 || bullets[i].y < -100 || bullets[i].y > can.height + 100){
-				bullets.splice(i,1);
 				i--;
 			}
 		}
@@ -282,6 +296,18 @@
 			timeTillBaddieSpawn = baddieSpawnInterval;
 		}
 		
+		//changing the type of tree the player wants to place
+		if(player.q && player.qHeld == false){
+			do{
+				type++;
+				if(type >= unlocked.length)
+					type = 0;
+			}while(unlocked[type].value == false);
+			player.qHeld = true;
+		}
+		if(player.q == false && player.qHeld)
+			player.qHeld = false;
+		
 		//making trees
 		if(player.e == true && player.eHeld == false){
 			var xx = player.x + (player.width * 0.5);
@@ -294,14 +320,14 @@
 				if(collide(trees[i],obj))
 					canPlace = false;
 			}
-			if(canPlace){
-				addTree(xx,yy,"blah");
+			if(canPlace && wallet >= getTreeByType(unlocked[type].type).cost){
+				wallet -= getTreeByType(unlocked[type].type).cost;
+				addTree(xx,yy,unlocked[type].type);
 			}
 			player.eHeld = true;
 		}
-		else if(player.e == false && player.eHeld == true)
+		if(player.e == false && player.eHeld == true)
 			player.eHeld = false;
-		
 		
 		//game over if master tree died.
 		if(mast == false)
@@ -317,35 +343,64 @@
 		xx = Math.floor( xx / 50 ) * 50;
 		yy = Math.floor( yy / 50 ) * 50;
 		
-		ctx.fillStyle = "#FFFFCC";
+		//ctx.fillStyle = "#FFFFCC";
+		ctx.fillStyle = 'rgba(255,255,200,0.2)';
 		ctx.fillRect(xx,yy,50,50);
-		
-		//Center Tree
-		//ctx.drawImage(emoTree, 338, 230);
 		
 		//Trees
 		ctx.fillStyle = "#00FF00";
 		for(var i = 0; i < trees.length; i++){
-			ctx.drawImage(towerTree,trees[i].x,trees[i].y);
-			//ctx.fillRect(trees[i].x,trees[i].y,trees[i].width,trees[i].height);
+			ctx.fillStyle ="#00FF00";
+			if(trees[i].type == "master")
+				ctx.drawImage(treeImage,0,0,50,50,trees[i].x,trees[i].y,50,50);
+			else if(trees[i].type == "manufactured")
+				ctx.drawImage(treeImage,50,0,50,50,trees[i].x,trees[i].y,50,50);
+			else if(trees[i].type == "oak")
+				ctx.drawImage(treeImage,100,0,50,50,trees[i].x,trees[i].y,50,50);
+			else
+				ctx.fillRect(trees[i].x,trees[i].y,trees[i].width,trees[i].height);
+			
+			
+			
+			ctx.fillStyle = 'rgba(0,255,0,0.3)';
+			ctx.fillRect(trees[i].x+5,trees[i].y+47,(trees[i].health / getTreeByType(trees[i].type).health) * 40,3);
+			ctx.fillStyle = 'rgba(0,0,255,0.3)';
+			var t = getTreeByType(trees[i].type);
+			var w = t.timeToWait;
+			ctx.fillRect(trees[i].x+5,trees[i].y+44,((w - trees[i].timeToWait) / w) * 40,3);
+			ctx.fillStyle = 'rgba(255,0,0,0.3)';
+			var c = t.clip;
+			ctx.fillRect(trees[i].x+5,trees[i].y+41, (trees[i].clip / c) * 40,3);
 		}
 		
 		//Baddies
 		ctx.fillStyle = "#FF0000";
 		for(var i = 0; i < baddies.length; i++){
-			ctx.drawImage(spider,baddies[i].x,baddies[i].y);
-			ctx.fillRect(baddies[i].x,baddies[i].y,baddies[i].width,baddies[i].height);
+			var nx = Math.floor(baddies[i].x + 0.5);
+			var ny = Math.floor(baddies[i].y + 0.5);
+			ctx.drawImage(spider,nx,ny);
+			//ctx.fillRect(baddies[i].x,baddies[i].y,baddies[i].width,baddies[i].height);
 		}
 		
 		//Player
 		ctx.fillStyle = "#0000FF";
-		ctx.drawImage(beedog,player.x,player.y);
-		ctx.fillRect(player.x, player.y, player.width, player.height);
+		var nx = Math.floor(player.x + 0.5);
+		var ny = Math.floor(player.y + 0.5);
+		if(player.left)
+			ctx.drawImage(beedog,0,0,30,30,nx,ny,30,30);
+		else if(player.right)
+			ctx.drawImage(beedog,30,0,30,30,nx,ny,30,30);
+		else if(player.up)
+			ctx.drawImage(beedog,90,0,30,30,nx,ny,30,30);
+		else
+			ctx.drawImage(beedog,60,0,30,30,nx,ny,30,30);
+		//ctx.fillRect(player.x, player.y, player.width, player.height);
 		
 		//Bullets
 		ctx.fillStyle = "#FF0000";
 		for(var j = 0; j < bullets.length; j++){
-			ctx.fillRect(bullets[j].x,bullets[j].y,bullets[j].width,bullets[j].height);
+			ctx.drawImage(leaf,bullets[j].x,bullets[j].y);
+			//ctx.fillRect(bullets[j].x,bullets[j].y,bullets[j].width,bullets[j].height);
 		}
 		
 		//SpeechgBubbles
@@ -360,10 +415,15 @@
 		//PickUps
 		ctx.fillStyle = "#FFCC66";
 		for(var k = 0; k < pickUp.length; k++){
-			ctx.fillRect(pickUp[k].x, pickUp[k].y, pickUp[k].width, pickUp[k].height);
+			ctx.drawImage(coin,pickUp[k].x,pickUp[k].y);
+			//ctx.fillRect(pickUp[k].x, pickUp[k].y, pickUp[k].width, pickUp[k].height);
 		}
 		//Wallet
 		ctx.fillText("Money: " + wallet, 0, 10);
+		
+		//Type of Tree that you will plant
+		ctx.fillStyle = "#BB9999";
+		ctx.fillText(unlocked[type].type,580,10);
 		
 		//Crosshair
 		ctx.fillStyle = "#000000";
@@ -375,6 +435,7 @@
 		//Things below this line are used for bug fixing.
 		ctx.fillStyle = "#000000";
 		//ctx.fillText(bullets.length + "",0,10);
+		//ctx.fillText(type + "", 0, 10);
 	}
 	
 	//Starting position
@@ -390,13 +451,11 @@
 			bullets.splice(0,bullets.length);
 		if(speechBubbles.length > 0)
 			speechBubbles.splice(0,speechBubbles.length);
-		spider.src="face-small.png";
-		beedog.src="beedog.png";
-		emoTree.src="Tree.png";
-		towerTree.src="TreeNew.png";
-		background.src="Background.png";
+		if(pickUp.length > 0)
+			pickUp.splice(0,pickUp.length);
 		
 		addTree((can.width * 0.5) - 25, (can.height * 0.5) - 25,"master");
+		addSpeechBubble((can.width * 0.5) - 25, (can.height * 0.5) - 25,"master");
 		
 		update = playUpdate;
 		draw = playDraw;
@@ -444,19 +503,18 @@
 		bullets.push(b);
 	}
 	
-	function addTree(xx,yy,t){
+	function addTree(xx,yy,t){//x and y position. the "t" is a string, indicating the type of tree
+		var OBJ = getTreeByType(t);
 		
 		trees.push({
 			x: xx,
 			y: yy,
 			width: 50,
 			height: 50,
-			WAIT: 2000,
-			timeToWait: 2000,
-			health: 100,
-			range: 200,
+			timeToWait: OBJ.timeToWait,
+			health: OBJ.health,
+			range: OBJ.range,
 			type: t,
-			quote: "TEST QUOTE",
 			bulletToFire: {
 				x: xx - 25,
 				y: yy - 25,
@@ -464,21 +522,37 @@
 				height: 5,
 				angle: 0,
 				speed: 300,
-				damage: 25
+				damage: OBJ.bulletToFire.damage
 				}
 			});
 	}
 	
-	function addSpeechBubble(xx,yy,q){//xposition, y posistion, quote
-		var num = Math.random()*100;
-		if(num < 5){
-			speechBubbles.push({
-				x: xx,
-				y: yy,
-				quote: q,
-				timeLeft: 3000,
-				});
+	function addSpeechBubble(xx,yy,t){//xposition, y posistion, type
+		//switch?
+		var q = "";
+		var num = Math.random();
+		switch(t){
+			case "master":
+				q = QUOTES.master[Math.floor(QUOTES.master.length * num)];
+				break;
+			case "manufactured":
+				q = QUOTES.manufactured[Math.floor(QUOTES.manufactured.length * num)];
+				break;
+			case "oak":
+				q = QUOTES.oak[Math.floor(QUOTES.oak.length * num)];
+				break;
+			case "petrified":
+				q = QUOTES.petrified[Math.floor(QUOTES.petrified.length * num)];
+				break;
+			default:
+				q = "QUOTE ERROR";
 		}
+		speechBubbles.push({
+			x: xx,
+			y: yy,
+			quote: q,
+			timeLeft: 3000,
+		});
 	}
 	
 	function addPickUp(xx, yy, val){ //x position, y position, value
@@ -487,7 +561,7 @@
 			y: yy,
 			width: 10,
 			height: 10,
-			val: 20,
+			val: val,
 			});
 	}
 		
@@ -502,6 +576,27 @@
 			return false;
 		
 		return true;
+	}
+	
+	function getTreeByType(t){//This function takes in a string name, and returns the adress to the storage version of a tree. This is NOT an actual tree object, it is a static tree.
+		var OBJ;
+		
+		switch(t){
+			case "master":
+				OBJ = STORAGE.master;
+				break;
+			case "manufactured":
+				OBJ = STORAGE.manufactured;
+				break;
+			case "oak":
+				OBJ = STORAGE.oak;
+				break;
+			case "petrified":
+				OBJ = STORAGE.petrified;
+				break;
+		}
+		
+		return OBJ;
 	}
 	
 	
@@ -655,6 +750,8 @@
 			player.right = true;
 		if(evt.keyCode == 69)//e
 			player.e = true;
+		if(evt.keyCode == 81)//q?
+			player.q = true;
 			
 		if(65 <= evt.keyCode && evt.keyCode >= 90)
 			evt.preventDefault();
@@ -671,6 +768,8 @@
 			player.right = false;
 		if(evt.keyCode == 69)//e
 			player.e = false;
+		if(evt.keyCode == 81)//q?
+			player.q = false;
 			
 		if(65 <= evt.keyCode && evt.keyCode >= 90)
 			evt.preventDefault();
@@ -727,23 +826,128 @@
 	}
 	//****End handling buttons being pressed**
 		
-	function loadJSON(callback) {
-			var xhr = new XMLHttpRequest();
-			xhr.overrideMimeType("application/json");
-			xhr.open('GET', 'rectangles.json', true);
-			xhr.onreadystatechange = function () {
-				if (xhr.readyState == 4 && xhr.status == "200") {
-					callback(xhr.responseText);
-				}
-			};
-			xhr.send(null);
-		}
+	function loadJSON(callback) {//not working?
+		var xhr = new XMLHttpRequest();
+		xhr.overrideMimeType("application/json");
+		xhr.open('GET', 'jsonTrees.json', true);
+		xhr.onreadystatechange = function () {
+			if (xhr.readyState == 4 && xhr.status == "200") {
+				callback(xhr.responseText);
+			}
+		};
+		xhr.send(null);
+	}
 
 	
 	function main(){
 		ctx = document.getElementById('canvas').getContext("2d");
-		loadJSON( function(data){
-			= JSON.parse(data)});
+		//importing photos
+		spider.src="Baddie.png";
+		beedog.src="BeeDog.png";
+		treeImage.src="Trees.png";
+		background.src="Background.png";
+		coin.src="Coin.png";
+		leaf.src="Leaf.png";
+		
+		
+		//Here, I add all of the items into the "STORAGE" variable.
+		STORAGE = {
+			master: {
+				x: 0,
+				y: 0,
+				width: 50,
+				height: 50,
+				timeToWait: 2000,
+				clip: 0,
+				health: 300,
+				range: 0,
+				type: "master",
+				cost: 1000,
+				bulletToFire: {
+					x: 0,
+					y: 0,
+					width: 5,
+					height: 5,
+					angle: 0,
+					speed: 300,
+					damage: 25
+				}
+			},
+			
+			manufactured: {
+				x: 0,
+				y: 0,
+				width: 50,
+				height: 50,
+				timeToWait: 2000,
+				clip: 20,
+				health: 100,
+				range: 200,
+				type: "manufactured",
+				cost: 300,
+				bulletToFire: {
+					x: 0,
+					y: 0,
+					width: 5,
+					height: 5,
+					angle: 0,
+					speed: 300,
+					damage: 25
+				}
+			},
+			
+			oak: {
+				x: 0,
+				y: 0,
+				width: 50,
+				height: 50,
+				timeToWait: 10000,
+				clip: 6,
+				health: 100,
+				range: 125,
+				type: "oak",
+				cost: 500,
+				bulletToFire: {
+					x: 0,
+					y: 0,
+					width: 5,
+					height: 5,
+					angle: 0,
+					speed: 300,
+					damage: 80
+				}
+			},
+			
+			petrified: {
+				x: 0,
+				y: 0,
+				width: 50,
+				height: 50,
+				timeToWait: 1000,
+				clip: 40,
+				health: 500,
+				range: 100,
+				type: "petrified",
+				cost: 300,
+				bulletToFire: {
+					x: 0,
+					y: 0,
+					width: 5,
+					height: 5,
+					angle: 0,
+					speed: 300,
+					damage: 5
+				}
+			}
+		}
+		
+		QUOTES = {
+			master: [ "I AM YOUR GOD", "PROTECT ME, MINIONS"],
+			manufactured: ["~Virus Detected~", "~Commencing Cleanup~"],
+			oak: ["Ew! A spider!", "Kill it with fire!"],
+			petrified: ["That tickles...", "Are you trying to hurt me?"]
+			};
+		
 		menuSetup();
 		
 		window.requestAnimationFrame(tick);
@@ -760,7 +964,26 @@
 	/*
 	I will write random notes down here so you may see later on.
 	
-	:D
+	List of trees (in order that they are on the json file)
+	*master
+	acts like a superior king of all beings.
+	
+	*manufactured
+	default, basic tree. this is used as a basis of comparison for all other trees.
+	
+	*oak
+	afraid of spiders.
+	-has very close range
+	-he takes a super long time to recharge after each shot. If caught off guard, this tree can die easily.
+	+shoots a very powerful shot.
+	
+	*petrified
+	brute, but also dumb.
+	+has a crazy amount of health. Meant to stop enemies from moving.
+	-weak attack.
+	
+	Notes:
+	I want to look through the update function. There is some repeditive and un-needed code that can be simplified. It will also make the program run faster.
 	*/
 	
 	</script>
