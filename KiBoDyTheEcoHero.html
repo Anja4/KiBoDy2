@@ -21,8 +21,26 @@
 	var accumulate = 0;
 	var update;
 	var draw;
-	var baddieSpawnInterval = 7000;
-	var timeTillBaddieSpawn = 7000;
+	
+	//play variables
+	
+	var baddieSpawnInterval = 7500;//need to change
+	var timeTillBaddieSpawn = 7500;
+	
+	var waveNum = 0;
+	var currWave;
+	var timeSinceLastWave = 0;
+	var WAVEDELAY = 5000;//the time inbetween each wave.
+	var waves = [
+		{
+			waveLength: 15000,
+			times: [6000,-1,-1],
+		},
+		{
+			waveLength: 20000,
+			times: [4000,-1,-1],
+		}];
+	
 	var wallet = 0;
 	var STORAGE;
 	var QUOTES;
@@ -84,6 +102,8 @@
 		length: 20,
 		width: 2};
 	
+	
+	//Menu variables
 	var go=false;
 	var playButton={x:300,y:350,width:200,height:70}
 	var introButton={x:300,y:450,width:200,height:70}
@@ -289,11 +309,13 @@
 		
 		//spawning baddies
 		timeTillBaddieSpawn -= time;
+		if(baddieSpawnInterval > 700)
+			baddieSpawnInterval -= time * 0.05;
+		else
+			baddieSpawnInterval = 700;
 		if(timeTillBaddieSpawn <= 0){
 			addBaddie();
-			if(baddieSpawnInterval > 500)
-				baddieSpawnInterval -= 50;
-			timeTillBaddieSpawn = baddieSpawnInterval;
+			timeTillBaddieSpawn += baddieSpawnInterval;
 		}
 		
 		//changing the type of tree the player wants to place
@@ -472,6 +494,7 @@
 			hitInterval: 1000,
 			hitTime: 1000,
 			damage: 20,
+			worth: 20,
 			};
 		
 		var rand = Math.floor(Math.random() + 0.5);
@@ -597,6 +620,21 @@
 		}
 		
 		return OBJ;
+	}
+	
+	function nextWave(){
+		waveNum++;
+		
+		var n = [];
+		for(var i = 0; i < waves[waveNum].times.length; i++){
+			n.push(waves[waveNum].times[i]);
+		}
+		currWave = {
+			waveLength: waves[waveNum].waveLength,
+			times: n
+		};
+			
+		timeSinceLastWave = 0;
 	}
 	
 	
@@ -982,6 +1020,18 @@
 	+has a crazy amount of health. Meant to stop enemies from moving.
 	-weak attack.
 	
+	
+	List of Baddies
+	*normal
+	default. This baddie is used as a standard for other types.
+	
+	*tank
+	high health, slow movement. Probably a large size. (change width and height maybe?)
+	
+	*swarm
+	fast movement speed, but low health. Used for ZURG RUSHES.
+	
+	*
 	Notes:
 	I want to look through the update function. There is some repeditive and un-needed code that can be simplified. It will also make the program run faster.
 	*/
