@@ -29,16 +29,21 @@
 	
 	var waveNum = 0;
 	var currWave;
-	var timeSinceLastWave = 0;
-	var WAVEDELAY = 5000;//the time inbetween each wave.
-	var waves = [
+	var WAVES = [
 		{
-			waveLength: 15000,
-			times: [6000,-1,-1],
+			waveLength: 60000,
+			waveDelay: 5000,
+			times: [6000,-1000,-1000],//if a time is at -1000, it wont spawn that type for that round.
 		},
 		{
-			waveLength: 20000,
-			times: [4000,-1,-1],
+			waveLength: 60000,
+			waveDelay: 5000,
+			times: [4000,-1000,-1000],
+		},
+		{
+			waveLength: 60000,
+			waveDelay: 5000,
+			times: [3000,-1000,-1000],
 		}];
 	
 	var wallet = 0;
@@ -308,7 +313,24 @@
 		}
 		
 		//spawning baddies
-		timeTillBaddieSpawn -= time;
+		if(currWave.waveDelay > 0){
+			currWave.waveDelay -= time;
+		}
+		else{
+			currWave.waveLength -= time;
+			for(var i = 0; i < currWave.times.length; i++){
+				currWave.times[i] -= time;
+				if(currWave.waveLength > 0 && currWave.times[i] <= 0 && currWave.times[i] > -1000){
+					addBaddie();
+					console.log("Type " + i + " baddie was added.");
+					currWave.times[i] += WAVES[waveNum].times[i];
+				}
+			}
+			if(currWave.waveLength <= 0 && baddies.length == 0)
+				setWave(waveNum + 1);
+		}
+		
+		/*timeTillBaddieSpawn -= time;
 		if(baddieSpawnInterval > 700)
 			baddieSpawnInterval -= time * 0.05;
 		else
@@ -316,7 +338,7 @@
 		if(timeTillBaddieSpawn <= 0){
 			addBaddie();
 			timeTillBaddieSpawn += baddieSpawnInterval;
-		}
+		}*/
 		
 		//changing the type of tree the player wants to place
 		if(player.q && player.qHeld == false){
@@ -441,11 +463,12 @@
 			//ctx.fillRect(pickUp[k].x, pickUp[k].y, pickUp[k].width, pickUp[k].height);
 		}
 		//Wallet
-		ctx.fillText("Money: " + wallet, 0, 10);
+		ctx.font = "20pt Helvetica";
+		ctx.fillText("$ " + wallet, 10, 30);
 		
 		//Type of Tree that you will plant
 		ctx.fillStyle = "#BB9999";
-		ctx.fillText(unlocked[type].type,580,10);
+		ctx.fillText(unlocked[type].type + " ($ " + getTreeByType(unlocked[type].type).cost + ")",10,60);
 		
 		//Crosshair
 		ctx.fillStyle = "#000000";
@@ -453,6 +476,11 @@
 		ctx.fillRect(mouse.x - (crosshair.width / 2),mouse.y + crosshair.gap, crosshair.width, crosshair.length);
 		ctx.fillRect(mouse.x - crosshair.length - crosshair.gap, mouse.y - (crosshair.width/2), crosshair.length, crosshair.width);
 		ctx.fillRect(mouse.x + crosshair.gap, mouse.y - (crosshair.width/2), crosshair.length, crosshair.width);
+		
+		//Wave Text
+		ctx.font = "50pt Helvetica";
+		if(currWave.waveDelay > 0)
+			ctx.fillText("WAVE "+waveNum,250,330);
 		
 		//Things below this line are used for bug fixing.
 		ctx.fillStyle = "#000000";
@@ -476,8 +504,9 @@
 		if(pickUp.length > 0)
 			pickUp.splice(0,pickUp.length);
 		
+		setWave(0);
+		
 		addTree((can.width * 0.5) - 25, (can.height * 0.5) - 25,"master");
-		addSpeechBubble((can.width * 0.5) - 25, (can.height * 0.5) - 25,"master");
 		
 		update = playUpdate;
 		draw = playDraw;
@@ -622,19 +651,25 @@
 		return OBJ;
 	}
 	
-	function nextWave(){
-		waveNum++;
+	function setWave(v){
+		waveNum = v;
+		
+		if(waveNum >= WAVES.length){
+			//winSetup();
+			return;
+		}
 		
 		var n = [];
-		for(var i = 0; i < waves[waveNum].times.length; i++){
-			n.push(waves[waveNum].times[i]);
+		for(var i = 0; i < WAVES[waveNum].times.length; i++){
+			n.push(WAVES[waveNum].times[i]);
 		}
 		currWave = {
-			waveLength: waves[waveNum].waveLength,
-			times: n
+			waveLength: WAVES[waveNum].waveLength,
+			waveDelay: WAVES[waveNum].waveDelay,
+			times: n,
 		};
-			
-		timeSinceLastWave = 0;
+		
+		addSpeechBubble((can.width * 0.5) - 25, (can.height * 0.5) - 25,"master");
 	}
 	
 	
