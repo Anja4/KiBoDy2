@@ -45,6 +45,15 @@
 	var coin = new Image();
 	var leaf = new Image();
 	
+	var sounds = new Howl({
+		urls: ['Combined.wav'],
+		sprite: {
+			fire: [0,120],
+			pickUp: [130,2870],
+			treeHurt: [3000,3000],
+		}
+	});
+	
 	var baddies = [];
 	var bullets = [];
 	var trees = [];
