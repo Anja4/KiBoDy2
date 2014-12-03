@@ -68,6 +68,8 @@
 	var coin = new Image();
 	var leaf = new Image();
 	
+	
+	
 	var baddies = [];
 	var bullets = [];
 	var trees = [];
@@ -459,7 +461,9 @@
 		//PickUps
 		ctx.fillStyle = "#FFCC66";
 		for(var k = 0; k < pickUp.length; k++){
-			ctx.drawImage(coin,pickUp[k].x,pickUp[k].y);
+			var xx = Math.floor(pickUp[k].x + 0.5);
+			var yy = Math.floor(pickUp[k].y + 0.5);
+			ctx.drawImage(coin,xx,yy);
 			//ctx.fillRect(pickUp[k].x, pickUp[k].y, pickUp[k].width, pickUp[k].height);
 		}
 		//Wallet
@@ -823,7 +827,7 @@
 			player.right = true;
 		if(evt.keyCode == 69)//e
 			player.e = true;
-		if(evt.keyCode == 81)//q?
+		if(evt.keyCode == 81)//q
 			player.q = true;
 			
 		if(65 <= evt.keyCode && evt.keyCode >= 90)
@@ -841,7 +845,7 @@
 			player.right = false;
 		if(evt.keyCode == 69)//e
 			player.e = false;
-		if(evt.keyCode == 81)//q?
+		if(evt.keyCode == 81)//q
 			player.q = false;
 			
 		if(65 <= evt.keyCode && evt.keyCode >= 90)
