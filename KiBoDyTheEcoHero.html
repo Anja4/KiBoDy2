@@ -45,6 +45,15 @@
 	var coin = new Image();
 	var leaf = new Image();
 	
+	var sounds = new Howl({
+		urls: ['Combined.wav'],
+		sprite: {
+			fire: [0,120],
+			pickUp: [130,170],
+			treeHurt: [300,300]
+		}
+	});
+	
 	var baddies = [];
 	var bullets = [];
 	var trees = [];
@@ -169,6 +178,7 @@
 			else if(baddies[i].hitTime == 0){
 				trees[col].health -= baddies[i].damage;
 				baddies[i].hitTime = baddies[i].hitInterval;
+				sounds.play('treeHurt');
 			}
 			
 			for(var j = 0; j < bullets.length; j++){//collision detection between bullets and baddies
@@ -243,6 +253,7 @@
 				pickUp[i].pickedUp = true;
 				wallet += pickUp[i].val;
 				pickUp.splice(i,1);
+				sounds.play('pickUp');
 				i--;
 				//if we want to add seeds, could add code here?
 			}	
@@ -501,6 +512,7 @@
 	
 	function addBullet(b){//b must include these vars: x, y, width (5), height (5), speed (300), angle, damage (25)
 		bullets.push(b);
+		sounds.play('fire');
 	}
 	
 	function addTree(xx,yy,t){//x and y position. the "t" is a string, indicating the type of tree
