@@ -58,24 +58,31 @@
 		new Howl({
 			urls: // song Galaxy Collides by Ian Hicks
 			volume: 0.7,
-			loops: true
+			loops: true,
+			onload: function(){musicLoads[0] = true;}
 		}),
 		new Howl({
 			urls: //Infiltrate by Ian Hicks
-			volume: 0.7
+			volume: 0.7,
+			onload: function(){musicLoads[1] = true;}
 		}),
 		new Howl({
 			urls: //130 Little Viruses
-			volume: 0.7
+			volume: 0.7,
+			onload: function(){muicLoads[2] = true;}
 		}),
 		new Howl({
 			urls: //facepalm by Ian Hicks
-			volume: 0.7
+			volume: 0.7,
+			onload: function(){musicLoads[3] = true;}
 		}),
 		new Howl({
 			urls: //Slug(battle) by Ben Prunty
+			onload: function(){musicLoads[4] = true;}
 		})
 	];
+	
+	var musicLoads = [false,false,false,false,false];
 		
 		
 	
@@ -695,18 +702,29 @@
 	function menuDraw(){
 		ctx.clearRect(0,0,can.width,can.height);
 		ctx.fillStyle="green";
-		ctx.fillRect(playButton.x, playButton.y, playButton.width, playButton.height);
 		ctx.fillRect(introButton.x,introButton.y,introButton.width,introButton.height);
 		
-		ctx.fillStyle="black";
-		var ms = {x: mouse.x, y: mouse.y, width: 0, height: 0};
-		if(collide(ms,playButton)){
-			ctx.font="34pt Helvetica";
-			ctx.fillText("Play!",345,395);
+		var bol = true;
+		for(var i = 0; i < musicLoads.length; i++){
+			if(musicLoads[i] == false){
+				bol = false;
+			}
+		}
+		if(bol){
+			ctx.fillRect(playButton.x, playButton.y, playButton.width, playButton.height);
+			ctx.fillStyle="black";
+			var ms = {x: mouse.x, y: mouse.y, width: 0, height: 0};
+			if(collide(ms,playButton)){
+				ctx.font="34pt Helvetica";
+				ctx.fillText("Play!",345,395);
+			}
+			else{
+				ctx.font="30pt Helvetica";
+				ctx.fillText("Play!",350,400);
+			}
 		}
 		else{
-			ctx.font="30pt Helvetica";
-			ctx.fillText("Play!",350,400);
+			ctx.fillText("Loading",340,400);
 		}
 		
 		if(collide(ms,introButton)){
