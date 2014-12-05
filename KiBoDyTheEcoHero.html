@@ -54,6 +54,31 @@
 		}
 	});
 	
+	var music = [
+		new Howl({
+			urls: // song Galaxy Collides by Ian Hicks
+			volume: 0.7,
+			loops: true
+		}),
+		new Howl({
+			urls: //Infiltrate by Ian Hicks
+			volume: 0.7
+		}),
+		new Howl({
+			urls: //130 Little Viruses
+			volume: 0.7
+		}),
+		new Howl({
+			urls: //facepalm by Ian Hicks
+			volume: 0.7
+		}),
+		new Howl({
+			urls: //Slug(battle) by Ben Prunty
+		})
+	];
+		
+		
+	
 	var baddies = [];
 	var bullets = [];
 	var trees = [];
@@ -467,6 +492,7 @@
 		
 		addTree((can.width * 0.5) - 25, (can.height * 0.5) - 25,"master");
 		addSpeechBubble((can.width * 0.5) - 25, (can.height * 0.5) - 25,"master");
+		music[0].stop();
 		
 		update = playUpdate;
 		draw = playDraw;
@@ -699,6 +725,7 @@
 	function menuSetup(){
 		update = menuUpdate;
 		draw = menuDraw;
+		music[0].play();
 	}
 	
 	
@@ -836,20 +863,8 @@
 		
 		event.preventDefault();
 	}
+	
 	//****End handling buttons being pressed**
-		
-	function loadJSON(callback) {//not working?
-		var xhr = new XMLHttpRequest();
-		xhr.overrideMimeType("application/json");
-		xhr.open('GET', 'jsonTrees.json', true);
-		xhr.onreadystatechange = function () {
-			if (xhr.readyState == 4 && xhr.status == "200") {
-				callback(xhr.responseText);
-			}
-		};
-		xhr.send(null);
-	}
-
 	
 	function main(){
 		ctx = document.getElementById('canvas').getContext("2d");
