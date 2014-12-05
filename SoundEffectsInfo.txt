@@ -1,0 +1,6 @@
+Info for the sprites on sound effects.
+posistion start --- length
+
+fire --- 0 --- 0120
+pickup --- 0130 --- 2870
+treeHurt --- 3000 --- 3000
