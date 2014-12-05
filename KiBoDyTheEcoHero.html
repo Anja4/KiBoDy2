@@ -24,9 +24,6 @@
 	
 	//play variables
 	
-	var baddieSpawnInterval = 7500;//need to change
-	var timeTillBaddieSpawn = 7500;
-	
 	var waveNum = 0;
 	var currWave;
 	var WAVES = [
@@ -331,16 +328,6 @@
 			if(currWave.waveLength <= 0 && baddies.length == 0)
 				setWave(waveNum + 1);
 		}
-		
-		/*timeTillBaddieSpawn -= time;
-		if(baddieSpawnInterval > 700)
-			baddieSpawnInterval -= time * 0.05;
-		else
-			baddieSpawnInterval = 700;
-		if(timeTillBaddieSpawn <= 0){
-			addBaddie();
-			timeTillBaddieSpawn += baddieSpawnInterval;
-		}*/
 		
 		//changing the type of tree the player wants to place
 		if(player.q && player.qHeld == false){
