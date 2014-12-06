@@ -83,21 +83,25 @@
 		}),
 		new Howl({
 			urls: ['Infiltrate.mp3'],
-			volume: 0.7,
+			volume: 0.5,
+			loops: true,
 			onload: function(){musicLoads[1] = true;}
 		}),
 		new Howl({
 			urls: ['130LittleViruses.mp3'],
-			volume: 0.7,
+			volume: 0.5,
+			loops: true,
 			onload: function(){musicLoads[2] = true;}
 		}),
 		new Howl({
 			urls: ['Facepalm.mp3'],
-			volume: 0.7,
+			volume: 0.5,
+			loops: true,
 			onload: function(){musicLoads[3] = true;}
 		}),
 		new Howl({
 			urls: ['SlugBattle.mp3'],
+			loops: true,
 			onload: function(){musicLoads[4] = true;}
 		})
 	];
@@ -703,6 +707,16 @@
 			times: n,
 		};
 		
+		switch(waveNum){
+			case 0:
+				music[1].play();
+				break;
+			case 2:
+				music[1].stop();
+				music[2].play();
+				break;
+		}
+		
 		addSpeechBubble((can.width * 0.5) - 25, (can.height * 0.5) - 25,"master");
 	}
 	
@@ -816,8 +830,10 @@
 	function endUpdate(time){
 		endTime -= time;
 		
-		if(endTime <= 0)
+		if(endTime <= 0){
+			music[0].play();
 			menuSetup();
+		}
 	}
 	
 	function endDraw(){
@@ -828,17 +844,44 @@
 	}
 	
 	function endSetup(){
+		stopAllMusic();
+		endTime = endWaitTime;
 		update = endUpdate;
 		draw = endDraw;
-		
-		endTime = endWaitTime;
 	}
 	
+	///***** WIN GAME FUNCTINS*****
+	
+	function winUpdate(time){
+		endTime -= time;
+		
+		if(endTime <= 0){
+			music[0].play();
+			menuSetup();
+		}
+	}
+	
+	function winDraw(){
+		
+	}
+	
+	function winSetup(){
+		stopAllMusic();
+		endTime = endWaitTime;
+		update = winUpdate;
+		draw = winDraw;
+	}
+	
+	function stopAllMusic(){
+		for(var i = 0; i < music.length; i++){
+			music[i].stop();
+		}
+	}
 	
 	//*****LOADING*****
 	
 	
-	function loadingUpdate(){
+	function loadingUpdate(time){
 		var loadboo = true;
 		for (var i = 0; i < musicLoads.length; i++){
 			if (musicLoads[i] == false)
@@ -1072,7 +1115,7 @@
 		}
 		
 		QUOTES = {
-			master: [ "I AM YOUR GOD", "PROTECT ME, MINIONS"],
+			master: [ "I AM YOUR GOD", "PROTECT ME SLAVES"],
 			manufactured: ["~Virus Detected~", "~Commencing Cleanup~"],
 			oak: ["Ew! A spider!", "Kill it with fire!"],
 			petrified: ["That tickles...", "Are you trying to hurt me?"]
