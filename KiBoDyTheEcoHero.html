@@ -169,7 +169,7 @@
 			}
 			else if(baddies[i].hitTime == 0){
 				trees[col].health -= baddies[i].damage;
-				baddies[i].hitTime = getBaddieByType(baddies[i].hitTime);
+				baddies[i].hitTime = getBaddieByType(baddies[i].type).hitTime;
 			}
 			
 			for(var j = 0; j < bullets.length; j++){//collision detection between bullets and baddies
@@ -473,6 +473,7 @@
 			health: OBJ.health,
 			hitTime: 1000,
 			damage: OBJ.damage,
+			type: t
 			};
 		
 		var rand = Math.floor(Math.random() + 0.5);
@@ -593,6 +594,8 @@
 			case "tank":
 				OBJ = BADDIESTORAGE.tank;
 				break;
+			case "ranged":
+				OBJ = BADDIESTORAGE.ranged;
 		}
 			
 		return OBJ;
@@ -905,6 +908,18 @@
 				hitTime: 1000,
 				damage: 20,
 				type: "tank"
+				},
+			
+			ranged: {
+				x: 0,
+				y: 0,
+				width: 30,
+				height: 30,
+				speed: 10,
+				health: 100,
+				hitTime: 1000,
+				damage: 20,
+				type: "ranged"
 				}
 		}			
 		
