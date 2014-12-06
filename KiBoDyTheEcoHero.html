@@ -56,28 +56,28 @@
 	
 	var music = [
 		new Howl({
-			urls: // song Galaxy Collides by Ian Hicks
+			urls: ['GalaxyCollides.mp3'],
 			volume: 0.7,
 			loops: true,
 			onload: function(){musicLoads[0] = true;}
 		}),
 		new Howl({
-			urls: //Infiltrate by Ian Hicks
+			urls: ['Infiltrate.mp3'],
 			volume: 0.7,
 			onload: function(){musicLoads[1] = true;}
 		}),
 		new Howl({
-			urls: //130 Little Viruses
+			urls: ['130LittleViruses.mp3'],
 			volume: 0.7,
-			onload: function(){muicLoads[2] = true;}
+			onload: function(){musicLoads[2] = true;}
 		}),
 		new Howl({
-			urls: //facepalm by Ian Hicks
+			urls: ['Facepalm.mp3'],
 			volume: 0.7,
 			onload: function(){musicLoads[3] = true;}
 		}),
 		new Howl({
-			urls: //Slug(battle) by Ben Prunty
+			urls: ['SlugBattle.mp3'],
 			onload: function(){musicLoads[4] = true;}
 		})
 	];
@@ -743,7 +743,6 @@
 	function menuSetup(){
 		update = menuUpdate;
 		draw = menuDraw;
-		music[0].play();
 	}
 	
 	
@@ -773,6 +772,30 @@
 		endTime = endWaitTime;
 	}
 	
+	
+	//*****LOADING*****
+	
+	
+	function loadingUpdate(){
+		var loadboo = true;
+		for (var i = 0; i < musicLoads.length; i++){
+			if (musicLoads[i] == false)
+				loadboo = false;
+		}
+		if (loadboo == true){
+			music[0].play();
+			menuSetup();
+		}
+	}
+	
+	function loadingDraw(){
+	
+	}
+	
+	function loadingSetup(){
+		update = loadingUpdate;
+		draw = loadingDraw;
+	}
 	
 	
 	//*****TICK FUNCTION*****
@@ -993,7 +1016,7 @@
 			petrified: ["That tickles...", "Are you trying to hurt me?"]
 			};
 		
-		menuSetup();
+		loadingSetup();
 		
 		window.requestAnimationFrame(tick);
 	}
