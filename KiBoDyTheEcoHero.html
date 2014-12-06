@@ -65,6 +65,44 @@
 	var coin = new Image();
 	var leaf = new Image();
 	
+	var sounds = new Howl({
+		urls: ['Combined.wav'],
+		sprite: {
+			fire: [0,120],
+			pickUp: [130,170],
+			treeHurt: [300,300]
+		}
+	});
+	
+	var music = [
+		new Howl({
+			urls: ['GalaxyCollides.mp3'],
+			volume: 0.7,
+			loops: true,
+			onload: function(){musicLoads[0] = true;}
+		}),
+		new Howl({
+			urls: ['Infiltrate.mp3'],
+			volume: 0.7,
+			onload: function(){musicLoads[1] = true;}
+		}),
+		new Howl({
+			urls: ['130LittleViruses.mp3'],
+			volume: 0.7,
+			onload: function(){musicLoads[2] = true;}
+		}),
+		new Howl({
+			urls: ['Facepalm.mp3'],
+			volume: 0.7,
+			onload: function(){musicLoads[3] = true;}
+		}),
+		new Howl({
+			urls: ['SlugBattle.mp3'],
+			onload: function(){musicLoads[4] = true;}
+		})
+	];
+	
+	var musicLoads = [false,false,false,false,false];
 	
 	
 	var baddies = [];
@@ -193,6 +231,7 @@
 			else if(baddies[i].hitTime == 0){
 				trees[col].health -= baddies[i].damage;
 				baddies[i].hitTime = baddies[i].hitInterval;
+				sounds.play('treeHurt');
 			}
 			
 			for(var j = 0; j < bullets.length; j++){//collision detection between bullets and baddies
@@ -267,6 +306,7 @@
 				pickUp[i].pickedUp = true;
 				wallet += pickUp[i].val;
 				pickUp.splice(i,1);
+				sounds.play('pickUp');
 				i--;
 				//if we want to add seeds, could add code here?
 			}	
@@ -498,6 +538,8 @@
 		setWave(0);
 		
 		addTree((can.width * 0.5) - 25, (can.height * 0.5) - 25,"master");
+		addSpeechBubble((can.width * 0.5) - 25, (can.height * 0.5) - 25,"master");
+		music[0].stop();
 		
 		update = playUpdate;
 		draw = playDraw;
@@ -544,6 +586,7 @@
 	
 	function addBullet(b){//b must include these vars: x, y, width (5), height (5), speed (300), angle, damage (25)
 		bullets.push(b);
+		sounds.play('fire');
 	}
 	
 	function addTree(xx,yy,t){//x and y position. the "t" is a string, indicating the type of tree
@@ -721,18 +764,29 @@
 	function menuDraw(){
 		ctx.clearRect(0,0,can.width,can.height);
 		ctx.fillStyle="green";
-		ctx.fillRect(playButton.x, playButton.y, playButton.width, playButton.height);
 		ctx.fillRect(introButton.x,introButton.y,introButton.width,introButton.height);
 		
-		ctx.fillStyle="black";
-		var ms = {x: mouse.x, y: mouse.y, width: 0, height: 0};
-		if(collide(ms,playButton)){
-			ctx.font="34pt Helvetica";
-			ctx.fillText("Play!",345,395);
+		var bol = true;
+		for(var i = 0; i < musicLoads.length; i++){
+			if(musicLoads[i] == false){
+				bol = false;
+			}
+		}
+		if(bol){
+			ctx.fillRect(playButton.x, playButton.y, playButton.width, playButton.height);
+			ctx.fillStyle="black";
+			var ms = {x: mouse.x, y: mouse.y, width: 0, height: 0};
+			if(collide(ms,playButton)){
+				ctx.font="34pt Helvetica";
+				ctx.fillText("Play!",345,395);
+			}
+			else{
+				ctx.font="30pt Helvetica";
+				ctx.fillText("Play!",350,400);
+			}
 		}
 		else{
-			ctx.font="30pt Helvetica";
-			ctx.fillText("Play!",350,400);
+			ctx.fillText("Loading",340,400);
 		}
 		
 		if(collide(ms,introButton)){
@@ -780,6 +834,30 @@
 		endTime = endWaitTime;
 	}
 	
+	
+	//*****LOADING*****
+	
+	
+	function loadingUpdate(){
+		var loadboo = true;
+		for (var i = 0; i < musicLoads.length; i++){
+			if (musicLoads[i] == false)
+				loadboo = false;
+		}
+		if (loadboo == true){
+			music[0].play();
+			menuSetup();
+		}
+	}
+	
+	function loadingDraw(){
+	
+	}
+	
+	function loadingSetup(){
+		update = loadingUpdate;
+		draw = loadingDraw;
+	}
 	
 	
 	//*****TICK FUNCTION*****
@@ -888,20 +966,8 @@
 		
 		event.preventDefault();
 	}
+	
 	//****End handling buttons being pressed**
-		
-	function loadJSON(callback) {//not working?
-		var xhr = new XMLHttpRequest();
-		xhr.overrideMimeType("application/json");
-		xhr.open('GET', 'jsonTrees.json', true);
-		xhr.onreadystatechange = function () {
-			if (xhr.readyState == 4 && xhr.status == "200") {
-				callback(xhr.responseText);
-			}
-		};
-		xhr.send(null);
-	}
-
 	
 	function main(){
 		ctx = document.getElementById('canvas').getContext("2d");
@@ -1012,7 +1078,7 @@
 			petrified: ["That tickles...", "Are you trying to hurt me?"]
 			};
 		
-		menuSetup();
+		loadingSetup();
 		
 		window.requestAnimationFrame(tick);
 	}
