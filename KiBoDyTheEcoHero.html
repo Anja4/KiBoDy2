@@ -378,7 +378,21 @@
 		for(var i = 0; i < baddies.length; i++){
 			var nx = Math.floor(baddies[i].x + 0.5);
 			var ny = Math.floor(baddies[i].y + 0.5);
-			ctx.drawImage(spider,nx,ny);
+			if(baddies[i].type == "spider"){
+				ctx.drawImage(spider,nx,ny);
+			}
+			else if(baddies[i].type == "swarm"){
+				ctx.fillStyle = "red";
+				ctx.fillRect(nx, ny, baddies[i].width, baddies[i].height);
+			}
+			else if(baddies[i].type == "tank"){
+				ctx.fillStyle = "blue";
+				ctx.fillRect(nx, ny, baddies[i].width, baddies[i].height);
+			}
+			else if(baddies[i].type == "ranged"){
+				ctx.fillStyle = "yellow";
+				ctx.fillRect(nx, ny, baddies[i].width, baddies[i].height);
+			}
 			//ctx.fillRect(baddies[i].x,baddies[i].y,baddies[i].width,baddies[i].height);
 		}
 		
