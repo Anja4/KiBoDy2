@@ -40,7 +40,17 @@
 		{
 			waveLength: 60000,
 			waveDelay: 5000,
-			times: [3000,-1000,-1000],
+			times: [5000,4000,-1000],
+		},
+		{
+			waveLength: 60000,
+			waveDelay: 5000,
+			times: [5000,2000,-1000],
+		},
+		{
+			waveLength: 60000,
+			waveDelay: 5000,
+			times: [4000,6000,10000],
 		}];
 	
 	var wallet = 0;
@@ -51,6 +61,8 @@
 		{ value: true, type: "manufactured"},
 		{ value: true, type: "oak"},
 		{ value: true, type: "petrified"},
+		{ value: false, type: "bamboo"},
+		{ value: false, type: "shrub"}
 		];
 		/*for now, I set all of these values to true for testing purposes. Here is what it is supposed to be:
 		the first value in the array should always be true (this means you can always place manufactured trees.)
@@ -58,6 +70,12 @@
 		when you press the "switch types" button, it will change to "types" variable to the index of the next true value in this array.*/
 	
 	var type = 0;//type we are trying to plant.
+	
+	var BADDIETYPES = [
+		"spider",
+		"swarm",
+		"tank",
+		"ranged"];
 	
 	var spider = new Image();
 	var beedog = new Image();
@@ -263,45 +281,75 @@
 			trees[i].timeToWait -= time;
 			
 			if(trees[i].timeToWait <= 0){
-			
-				var distance = -1;
-				var index = -1;
-				for(var j = 0; j < baddies.length; j++){
-					//find the distance from the center of the tree to the center of the baddie
-					var baddieCenter = {
-						x: baddies[j].x + (baddies[j].width * 0.5),
-						y: baddies[j].y + (baddies[j].height * 0.5)};
+				
+				if(trees[i].type == "bamboo"){
 					
-					var curDist = Math.sqrt(Math.pow(baddieCenter.x - treeCenter.x,2) + Math.pow( baddieCenter.y - treeCenter.y,2));
-					if(distance == -1 || curDist < distance){
-						index = j;
-						distance = curDist;
+					if(trees[i].clip > 0){
+						trees[i].clip--;
+						for(var k = 0; k < trees.length; k++){
+							if(k == i)
+								continue;
+							else{
+								var hithere = {
+									x: trees[i].x - 10,
+									y: trees[i].y - 10,
+									width: trees[i].widht + 20,
+									height: trees[i].height + 20
+								}
+								if(collides(hithere,trees[k]){
+									trees[k].health += 10;
+									if(trees[k].health > getTreeByType(trees[k].type).health)
+										trees[k].health = getTreeByType(trees[k].type).health;
+								}
+							}
+						}
 					}
-				}
-				if(index != -1 && distance <= trees[i].range && trees[i].clip > 0){
-					var baddieCenter = {
-						x: baddies[index].x + (baddies[index].width * 0.5),
-						y: baddies[index].y + (baddies[index].height * 0.5),
-						};
-					var bul = {//The reason why it imports each individual variable is to create a copy of the record, instead of using the reference
-						x: treeCenter.x - (trees[i].bulletToFire.width * 0.5),
-						y: treeCenter.y - (trees[i].bulletToFire.height * 0.5),
-						width: trees[i].bulletToFire.width,
-						height: trees[i].bulletToFire.height,
-						angle: trees[i].bulletToFire.angle,
-						speed: trees[i].bulletToFire.speed,
-						damage: trees[i].bulletToFire.damage};
-					bul.angle = Math.atan2((baddieCenter.y - treeCenter.y) , (baddieCenter.x - treeCenter.x));
-					addBullet(bul);
+					else
+						trees[i].timeToWait -= time;
 					
-					if(Math.random() <= 0.05)
-						addSpeechBubble(treeCenter.x,treeCenter.y,trees[i].type);
-					
-					trees[i].timeToWait += getTreeByType(trees[i].type).timeToWait;
-					trees[i].clip--;
 				}
 				else{
-					trees[i].timeToWait += time;
+				
+					var distance = -1;
+					var index = -1;
+					for(var j = 0; j < baddies.length; j++){
+						//find the distance from the center of the tree to the center of the baddie
+						var baddieCenter = {
+							x: baddies[j].x + (baddies[j].width * 0.5),
+							y: baddies[j].y + (baddies[j].height * 0.5)};
+						
+						var curDist = Math.sqrt(Math.pow(baddieCenter.x - treeCenter.x,2) + Math.pow( baddieCenter.y - treeCenter.y,2));
+						if(distance == -1 || curDist < distance){
+							index = j;
+							distance = curDist;
+						}
+					}
+					
+					if(index != -1 && distance <= trees[i].range && trees[i].clip > 0){
+						var baddieCenter = {
+							x: baddies[index].x + (baddies[index].width * 0.5),
+							y: baddies[index].y + (baddies[index].height * 0.5),
+							};
+						var bul = {//The reason why it imports each individual variable is to create a copy of the record, instead of using the reference
+							x: treeCenter.x - (trees[i].bulletToFire.width * 0.5),
+							y: treeCenter.y - (trees[i].bulletToFire.height * 0.5),
+							width: trees[i].bulletToFire.width,
+							height: trees[i].bulletToFire.height,
+							angle: trees[i].bulletToFire.angle,
+							speed: trees[i].bulletToFire.speed,
+							damage: trees[i].bulletToFire.damage};
+						bul.angle = Math.atan2((baddieCenter.y - treeCenter.y) , (baddieCenter.x - treeCenter.x));
+						addBullet(bul);
+						
+						if(Math.random() <= 0.05)
+							addSpeechBubble(treeCenter.x,treeCenter.y,trees[i].type);
+						
+						trees[i].timeToWait += getTreeByType(trees[i].type).timeToWait;
+						trees[i].clip--;
+					}
+					else{
+						trees[i].timeToWait += time;
+					}
 				}
 			}
 		}
@@ -365,8 +413,7 @@
 			for(var i = 0; i < currWave.times.length; i++){
 				currWave.times[i] -= time;
 				if(currWave.waveLength > 0 && currWave.times[i] <= 0 && currWave.times[i] > -1000){
-					addBaddie();
-					console.log("Type " + i + " baddie was added.");
+					addBaddie(BADDIETYPES[i]);
 					currWave.times[i] += WAVES[waveNum].times[i];
 				}
 			}
@@ -721,6 +768,12 @@
 				break;
 			case "petrified":
 				OBJ = TREESTORAGE.petrified;
+				break;
+			case "bamboo":
+				OBJ = TREESTORAGE.bamboo;
+				break;
+			case "shrub":
+				OBJ = TREESTORAGE.shrub;
 				break;
 		}
 		
