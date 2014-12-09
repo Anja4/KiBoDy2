@@ -1202,6 +1202,50 @@
 					speed: 300,
 					damage: 5
 				}
+			},
+			
+			bamboo: {
+				x: 0,
+				y: 0,
+				width: 50,
+				height: 50,
+				timeToWait: 1000,
+				clip: 50,
+				health: 100,
+				range: 0,
+				type: "bamboo",
+				cost: 400,
+				bulletToFire: {
+					x: 0,
+					y: 0,
+					width: 5,
+					height: 5,
+					angle: 0,
+					speed: 300,
+					damage: 0
+				}
+			},
+			
+			shrub: {
+				x: 0,
+				y: 0,
+				width: 50,
+				height: 50,
+				timeToWait: 1000,
+				clip: 1,
+				health: 150,
+				range: 100,
+				type: "shrub",
+				cost: 400,
+				bulletToFire: {
+					x: 0,
+					y: 0,
+					width: 5,
+					height: 5,
+					angle: 0,
+					speed: 300,
+					damage: 100,
+				}
 			}
 		}
 		
@@ -1209,7 +1253,9 @@
 			master: [ "I AM YOUR GOD", "PROTECT ME SLAVES"],
 			manufactured: ["~Virus Detected~", "~Commencing Cleanup~"],
 			oak: ["Ew! A spider!", "Kill it with fire!"],
-			petrified: ["That tickles...", "Are you trying to hurt me?"]
+			petrified: ["That tickles...", "Are you trying to hurt me?"],
+			bamboo: ["I will help you grow.","Ready for your examination?"],
+			shrub: ["Ni!","Bring me a shrubbery!"]
 		};
 		
 		loadingSetup();
