@@ -44,7 +44,8 @@
 		}];
 	
 	var wallet = 0;
-	var STORAGE;
+	var TREESTORAGE;
+	var BADDIESTORAGE;
 	var QUOTES;
 	var unlocked = [
 		{ value: true, type: "manufactured"},
@@ -235,8 +236,8 @@
 			}
 			else if(baddies[i].hitTime == 0){
 				trees[col].health -= baddies[i].damage;
-				baddies[i].hitTime = baddies[i].hitInterval;
 				sounds.play('treeHurt');
+				baddies[i].hitTime = getBaddieByType(baddies[i].type).hitTime;
 			}
 			
 			for(var j = 0; j < bullets.length; j++){//collision detection between bullets and baddies
@@ -313,7 +314,6 @@
 				pickUp.splice(i,1);
 				sounds.play('pickUp');
 				i--;
-				//if we want to add seeds, could add code here?
 			}	
 		}	
 		
@@ -456,7 +456,21 @@
 		for(var i = 0; i < baddies.length; i++){
 			var nx = Math.floor(baddies[i].x + 0.5);
 			var ny = Math.floor(baddies[i].y + 0.5);
-			ctx.drawImage(spider,nx,ny);
+			if(baddies[i].type == "spider"){
+				ctx.drawImage(spider,nx,ny);
+			}
+			else if(baddies[i].type == "swarm"){
+				ctx.fillStyle = "red";
+				ctx.fillRect(nx, ny, baddies[i].width, baddies[i].height);
+			}
+			else if(baddies[i].type == "tank"){
+				ctx.fillStyle = "blue";
+				ctx.fillRect(nx, ny, baddies[i].width, baddies[i].height);
+			}
+			else if(baddies[i].type == "ranged"){
+				ctx.fillStyle = "yellow";
+				ctx.fillRect(nx, ny, baddies[i].width, baddies[i].height);
+			}
 			//ctx.fillRect(baddies[i].x,baddies[i].y,baddies[i].width,baddies[i].height);
 		}
 		
@@ -550,18 +564,20 @@
 		draw = playDraw;
 	}
 	
-	function addBaddie(){
+	function addBaddie(t){ //NEED TO ADD PARAM TO ALL CALLS
+		var OBJ = getBaddieByType(t);
+		
 		var bad = {
 			x: 0,
 			y: 0,
 			width: 30,
 			height: 30,
-			speed: 10,
-			health: 100,
-			hitInterval: 1000,
+			speed: OBJ.speed,
+			health: OBJ.health,
 			hitTime: 1000,
-			damage: 20,
 			worth: 20,
+			damage: OBJ.damage,
+			type: t
 			};
 		
 		var rand = Math.floor(Math.random() + 0.5);
@@ -669,21 +685,42 @@
 		return true;
 	}
 	
-	function getTreeByType(t){//This function takes in a string name, and returns the adress to the storage version of a tree. This is NOT an actual tree object, it is a static tree.
+	//Baddie version of treeByType
+	function getBaddieByType(t){
+		var OBJ;
+		
+		switch(t){
+			case "spider":
+				OBJ = BADDIESTORAGE.spider;
+				break;
+			case "swarm":
+				OBJ = BADDIESTORAGE.swarm;
+				break;
+			case "tank":
+				OBJ = BADDIESTORAGE.tank;
+				break;
+			case "ranged":
+				OBJ = BADDIESTORAGE.ranged;
+		}
+			
+		return OBJ;
+	}
+	
+	function getTreeByType(t){//This function takes in a string name, and returns the address to the storage version of a tree. This is NOT an actual tree object, it is a static tree.
 		var OBJ;
 		
 		switch(t){
 			case "master":
-				OBJ = STORAGE.master;
+				OBJ = TREESTORAGE.master;
 				break;
 			case "manufactured":
-				OBJ = STORAGE.manufactured;
+				OBJ = TREESTORAGE.manufactured;
 				break;
 			case "oak":
-				OBJ = STORAGE.oak;
+				OBJ = TREESTORAGE.oak;
 				break;
 			case "petrified":
-				OBJ = STORAGE.petrified;
+				OBJ = TREESTORAGE.petrified;
 				break;
 		}
 		
@@ -1026,9 +1063,59 @@
 		coin.src="Coin.png";
 		leaf.src="Leaf.png";
 		
+		//info for baddies
+		BADDIESTORAGE = {
+			spider: {
+				x: 0,
+				y: 0,
+				width: 30,
+				height: 30,
+				speed: 10,
+				health: 100,
+				hitTime: 1000,
+				damage: 20,
+				type: "spider"
+				},
+			
+			swarm: {
+				x: 0,
+				y: 0,
+				width: 30,
+				height: 30,
+				speed: 15,
+				health: 50,
+				hitTime: 1000,
+				damage: 20,
+				type: "swarm"
+				},
+			
+			tank: {
+				x: 0,
+				y: 0,
+				width: 30,
+				height: 30,
+				speed: 5,
+				health: 150,
+				hitTime: 1000,
+				damage: 20,
+				type: "tank"
+				},
+			
+			ranged: {
+				x: 0,
+				y: 0,
+				width: 30,
+				height: 30,
+				speed: 10,
+				health: 100,
+				hitTime: 1000,
+				damage: 20,
+				type: "ranged"
+				}
+		}			
 		
-		//Here, I add all of the items into the "STORAGE" variable.
-		STORAGE = {
+		//Here, I add all of the items into the "TREESTORAGE" variable.
+		TREESTORAGE = {
 			master: {
 				x: 0,
 				y: 0,
@@ -1123,7 +1210,7 @@
 			manufactured: ["~Virus Detected~", "~Commencing Cleanup~"],
 			oak: ["Ew! A spider!", "Kill it with fire!"],
 			petrified: ["That tickles...", "Are you trying to hurt me?"]
-			};
+		};
 		
 		loadingSetup();
 		
