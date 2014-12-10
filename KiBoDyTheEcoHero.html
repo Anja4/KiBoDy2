@@ -61,8 +61,8 @@
 		{ value: true, type: "manufactured"},
 		{ value: true, type: "oak"},
 		{ value: true, type: "petrified"},
-		{ value: false, type: "bamboo"},
-		{ value: false, type: "shrub"}
+		{ value: true, type: "bamboo"},
+		{ value: true, type: "shrub"}
 		];
 		/*for now, I set all of these values to true for testing purposes. Here is what it is supposed to be:
 		the first value in the array should always be true (this means you can always place manufactured trees.)
@@ -256,6 +256,8 @@
 				trees[col].health -= baddies[i].damage;
 				sounds.play('treeHurt');
 				baddies[i].hitTime = getBaddieByType(baddies[i].type).hitTime;
+				if(trees[col].type == "shrub")
+					trees[col].bulletToFire.damage += baddies[i].damage;
 			}
 			
 			for(var j = 0; j < bullets.length; j++){//collision detection between bullets and baddies
@@ -286,6 +288,7 @@
 					
 					if(trees[i].clip > 0){
 						trees[i].clip--;
+						trees[i].timeToWait += getTreeByType(trees[i].type).timeToWait;
 						for(var k = 0; k < trees.length; k++){
 							if(k == i)
 								continue;
@@ -295,18 +298,22 @@
 									y: trees[i].y - 10,
 									width: trees[i].widht + 20,
 									height: trees[i].height + 20
-								}
-								if(collides(hithere,trees[k]){
-									trees[k].health += 10;
+								};
+								if(collide(hithere,trees[k])){
+									trees[k].health += 5;
 									if(trees[k].health > getTreeByType(trees[k].type).health)
 										trees[k].health = getTreeByType(trees[k].type).health;
 								}
 							}
 						}
+						
+						
+						if(Math.random() <= 0.05)
+							addSpeechBubble(treeCenter.x,treeCenter.y,trees[i].type);
 					}
 					else
 						trees[i].timeToWait -= time;
-					
+				
 				}
 				else{
 				
@@ -346,6 +353,8 @@
 						
 						trees[i].timeToWait += getTreeByType(trees[i].type).timeToWait;
 						trees[i].clip--;
+						if(trees[i].type == "shrub")
+							trees[i].bulletToFire.damage = 0;
 					}
 					else{
 						trees[i].timeToWait += time;
@@ -482,6 +491,12 @@
 				ctx.drawImage(treeImage,50,0,50,50,trees[i].x,trees[i].y,50,50);
 			else if(trees[i].type == "oak")
 				ctx.drawImage(treeImage,100,0,50,50,trees[i].x,trees[i].y,50,50);
+			else if(trees[i].type == "petrified")
+				ctx.drawImage(treeImage,150,0,50,50,trees[i].x,trees[i].y,50,50);
+			else if(trees[i].type == "bamboo")
+				ctx.drawImage(treeImage,200,0,50,50,trees[i].x,trees[i].y,50,50);
+			else if(trees[i].type == "shrub")
+				ctx.drawImage(treeImage,250,0,50,50,trees[i].x,trees[i].y,50,50);
 			else
 				ctx.fillRect(trees[i].x,trees[i].y,trees[i].width,trees[i].height);
 			
@@ -589,8 +604,9 @@
 	function playSetup(){
 		player.x = 385;
 		player.y = 285;
+		wallet = 0;
 		baddieSpawnInterval = 7000;
-		if(trees.length > 0)
+		if(trees.length > 0)qq
 			trees.splice(0,trees.length);
 		if(baddies.length > 0)
 			baddies.splice(0,baddies.length);
@@ -698,6 +714,12 @@
 			case "petrified":
 				q = QUOTES.petrified[Math.floor(QUOTES.petrified.length * num)];
 				break;
+			case "bamboo":
+				q = QUOTES.bamboo[Math.floor(QUOTES.bamboo.length * num)];
+				break
+			case "shrub":
+				q = QUOTES.shrub[Math.floor(QUOTES.shrub.length * num)];
+				break
 			default:
 				q = "QUOTE ERROR";
 		}
@@ -806,6 +828,10 @@
 				music[1].stop();
 				music[2].play();
 				break;
+			case 4:
+				music[2].stop();
+				music[3].play();
+			
 		}
 		
 		addSpeechBubble((can.width * 0.5) - 25, (can.height * 0.5) - 25,"master");
@@ -953,9 +979,9 @@
 	}
 	
 	function winDraw(){
-		ctx.clearRect(0,0,can.height,can.width);
+		ctx.clearRect(0,0,can.width,can.height);
 		ctx.fillStyle = "#000000";
-		ctx.font = "bold 45px Helvetica";
+		ctx.font = "45pt Helvetica";
 		ctx.fillText("YOU WIN!",100,300);
 	}
 	
@@ -1135,7 +1161,7 @@
 				y: 0,
 				width: 30,
 				height: 30,
-				speed: 15,
+				speed: 30,
 				health: 50,
 				hitTime: 1000,
 				damage: 20,
@@ -1148,9 +1174,9 @@
 				width: 30,
 				height: 30,
 				speed: 5,
-				health: 150,
+				health: 300,
 				hitTime: 1000,
-				damage: 20,
+				damage: 30,
 				type: "tank"
 				},
 			
@@ -1201,7 +1227,7 @@
 				health: 100,
 				range: 200,
 				type: "manufactured",
-				cost: 300,
+				cost: 10,//300
 				bulletToFire: {
 					x: 0,
 					y: 0,
@@ -1223,7 +1249,7 @@
 				health: 100,
 				range: 125,
 				type: "oak",
-				cost: 500,
+				cost: 10,//450
 				bulletToFire: {
 					x: 0,
 					y: 0,
@@ -1245,7 +1271,7 @@
 				health: 500,
 				range: 100,
 				type: "petrified",
-				cost: 300,
+				cost: 10,//250
 				bulletToFire: {
 					x: 0,
 					y: 0,
@@ -1267,7 +1293,7 @@
 				health: 100,
 				range: 0,
 				type: "bamboo",
-				cost: 400,
+				cost: 10,//400
 				bulletToFire: {
 					x: 0,
 					y: 0,
@@ -1289,7 +1315,7 @@
 				health: 150,
 				range: 100,
 				type: "shrub",
-				cost: 400,
+				cost: 10,//400
 				bulletToFire: {
 					x: 0,
 					y: 0,
@@ -1297,7 +1323,7 @@
 					height: 5,
 					angle: 0,
 					speed: 300,
-					damage: 100,
+					damage: 0,
 				}
 			}
 		}
