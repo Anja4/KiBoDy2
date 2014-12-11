@@ -124,19 +124,25 @@
 			onload: function(){musicLoads[2] = true;}
 		}),
 		new Howl({
+			urls: ['GhostMachine.mp3'],
+			volume: 0.5,
+			loops: true,
+			onLoad: function(){musicLoads[3] = true;}
+		}),
+		new Howl({
 			urls: ['Facepalm.mp3'],
 			volume: 0.5,
 			loops: true,
-			onload: function(){musicLoads[3] = true;}
+			onload: function(){musicLoads[4] = true;}
 		}),
 		new Howl({
 			urls: ['SlugBattle.mp3'],
 			loops: true,
-			onload: function(){musicLoads[4] = true;}
+			onload: function(){musicLoads[5] = true;}
 		})
 	];
 	
-	var musicLoads = [false,false,false,false,false];
+	var musicLoads = [false,false,false,false,false,false];
 	
 	
 	var baddies = [];
@@ -322,12 +328,13 @@
 						if(Math.random() <= 0.05)
 							addSpeechBubble(treeCenter.x,treeCenter.y,trees[i].type);
 					}
-					else
+					else{
 						trees[i].timeToWait -= time;
-				
+						if(trees[i].timeToWait < 0)
+							trees[i].timeToWait = 0;
+					}
 				}
 				else{
-				
 					var distance = -1;
 					var index = -1;
 					for(var j = 0; j < baddies.length; j++){
@@ -530,11 +537,10 @@
 			var nx = Math.floor(baddies[i].x + 0.5);
 			var ny = Math.floor(baddies[i].y + 0.5);
 			if(baddies[i].type == "spider"){
-				ctx.drawImage(spider,nx,ny);
+				ctx.drawImage(spider,0,0,30,30,nx,ny,baddies[i].width,baddies[i].height);
 			}
 			else if(baddies[i].type == "swarm"){
-				ctx.fillStyle = "red";
-				ctx.fillRect(nx, ny, baddies[i].width, baddies[i].height);
+				ctx.drawImage(spider,0,30,20,20,nx,ny,baddies[i].width,baddies[i].height);
 			}
 			else if(baddies[i].type == "tank"){
 				ctx.fillStyle = "blue";
@@ -603,7 +609,7 @@
 		//Wave Text
 		ctx.font = "50pt Helvetica";
 		if(currWave.waveDelay > 0)
-			ctx.fillText("WAVE "+waveNum,250,330);
+			ctx.fillText("WAVE "+ (waveNum + 1),250,330);
 		
 		//Things below this line are used for bug fixing.
 		ctx.fillStyle = "#000000";
@@ -617,7 +623,7 @@
 		player.y = 285;
 		wallet = 0;
 		baddieSpawnInterval = 7000;
-		if(trees.length > 0)qq
+		if(trees.length > 0)
 			trees.splice(0,trees.length);
 		if(baddies.length > 0)
 			baddies.splice(0,baddies.length);
@@ -644,8 +650,8 @@
 		var bad = {
 			x: 0,
 			y: 0,
-			width: 30,
-			height: 30,
+			width: OBJ.width,
+			height: OBJ.height,
 			speed: OBJ.speed,
 			health: OBJ.health,
 			hitTime: 1000,
@@ -842,6 +848,15 @@
 			case 4:
 				music[2].stop();
 				music[3].play();
+				break;
+			case 6:
+				music[3].stop();
+				music[4].play();
+				break;
+			case 8:
+				music[4].stop();
+				music[5].play();
+				break;
 			
 		}
 		
@@ -1170,8 +1185,8 @@
 			swarm: {
 				x: 0,
 				y: 0,
-				width: 30,
-				height: 30,
+				width:20,
+				height: 20,
 				speed: 30,
 				health: 50,
 				hitTime: 1000,
@@ -1182,10 +1197,10 @@
 			tank: {
 				x: 0,
 				y: 0,
-				width: 30,
-				height: 30,
+				width: 50,
+				height: 50,
 				speed: 5,
-				health: 300,
+				health: 400,
 				hitTime: 1000,
 				damage: 30,
 				type: "tank"
@@ -1238,7 +1253,7 @@
 				health: 100,
 				range: 200,
 				type: "manufactured",
-				cost: 10,//300
+				cost: 300,//300
 				bulletToFire: {
 					x: 0,
 					y: 0,
@@ -1260,7 +1275,7 @@
 				health: 100,
 				range: 125,
 				type: "oak",
-				cost: 10,//450
+				cost: 450,//450
 				bulletToFire: {
 					x: 0,
 					y: 0,
@@ -1282,7 +1297,7 @@
 				health: 500,
 				range: 100,
 				type: "petrified",
-				cost: 10,//250
+				cost: 250,//250
 				bulletToFire: {
 					x: 0,
 					y: 0,
@@ -1304,7 +1319,7 @@
 				health: 100,
 				range: 0,
 				type: "bamboo",
-				cost: 10,//400
+				cost: 400,//400
 				bulletToFire: {
 					x: 0,
 					y: 0,
@@ -1326,7 +1341,7 @@
 				health: 150,
 				range: 100,
 				type: "shrub",
-				cost: 10,//400
+				cost: 400,//400
 				bulletToFire: {
 					x: 0,
 					y: 0,
