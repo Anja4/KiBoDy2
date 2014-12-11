@@ -425,7 +425,7 @@
 					PUy = 0;
 				else if(PUy > can.height - 10)
 					PUy = can.height - 10;//minus the height of the coin
-				addPickUp(PUx, PUy, 20); //temporary value of 20 (later, different baddies can drop more money?)
+				addPickUp(PUx, PUy, getBaddieByType(baddies[i].type).worth); //temporary value of 20 (later, different baddies can drop more money?)
 				baddies.splice(i,1);
 				i--;
 			}
@@ -1199,6 +1199,7 @@
 				speed: 10,
 				health: 100,
 				hitTime: 1000,
+				worth: 20,
 				damage: 20,
 				type: "spider"
 				},
@@ -1211,6 +1212,7 @@
 				speed: 30,
 				health: 50,
 				hitTime: 1000,
+				worth: 10,
 				damage: 15,
 				type: "swarm"
 				},
@@ -1224,6 +1226,7 @@
 				health: 400,
 				hitTime: 1500,
 				damage: 45,
+				worth: 25,
 				type: "tank"
 				},
 			
@@ -1235,6 +1238,7 @@
 				speed: 10,
 				health: 100,
 				hitTime: 1000,
+				worth: 20,
 				damage: 15,
 				type: "ranged"
 				}
