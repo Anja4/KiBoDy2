@@ -253,23 +253,43 @@
 		//*****This code moves all the baddies*****
 		for(var i = 0; i < baddies.length; i++){
 			var col = -1;
+			var moves = true;
+			var dist = -1;
+			var bCenter = {
+				x: baddies[i].x + (0.5 * baddies[i].width),
+				y: baddies[i].y + (0.5 * baddies[i].height)
+			};
+
 			for(var j = 0; j < trees.length; j++){
-				if(collide(trees[j],baddies[i]))
+				if(collide(trees[j],baddies[i])){
 					col = j;
+					moves = false;
+				}
+				if(baddies[i].type == "ranged"){
+					var tCenter = {
+						x: trees[j].x + (0.5 * trees[j].width),
+						y: trees[j].y + (trees[j].height * 0.5)
+					}
+					var d = Math.sqrt(Math.pow( bCenter.y - tCenter.y,2) + Math.pow(bCenter.x - tCenter.x,2));
+					if((dist == -1 || d < dist) && d <= 100){
+						col = j;
+						dist = d;
+					}
+				}
 			}
 			
 			baddies[i].hitTime -= time;
 			if(baddies[i].hitTime < 0)
 				baddies[i].hitTime = 0;
 			
-			if(col == -1){
+			if( moves ){
 				var xx = can.width / 2;
 				var yy = can.height / 2;
 				var angle = Math.atan2(yy - baddies[i].y - (baddies[i].height * 0.5), xx - baddies[i].x - (baddies[i].width * 0.5));
 				baddies[i].x += Math.cos(angle) * baddies[i].speed * time * 0.001;
 				baddies[i].y += Math.sin(angle) * baddies[i].speed * time * 0.001;
 			}
-			else if(baddies[i].hitTime == 0){
+			if(baddies[i].hitTime == 0 && col != -1){
 				trees[col].health -= baddies[i].damage;
 				sounds.play('treeHurt');
 				baddies[i].hitTime = getBaddieByType(baddies[i].type).hitTime;
@@ -553,6 +573,15 @@
 			//ctx.fillRect(baddies[i].x,baddies[i].y,baddies[i].width,baddies[i].height);
 		}
 		
+		//PickUps
+		ctx.fillStyle = "#FFCC66";
+		for(var k = 0; k < pickUp.length; k++){
+			var xx = Math.floor(pickUp[k].x + 0.5);
+			var yy = Math.floor(pickUp[k].y + 0.5);
+			ctx.drawImage(coin,xx,yy);
+			//ctx.fillRect(pickUp[k].x, pickUp[k].y, pickUp[k].width, pickUp[k].height);
+		}
+		
 		//Player
 		ctx.fillStyle = "#0000FF";
 		var nx = Math.floor(player.x + 0.5);
@@ -583,20 +612,13 @@
 			ctx.fillText(speechBubbles[i].quote, speechBubbles[i].x - 25, speechBubbles[i].y - 35);
 		}
 		
-		//PickUps
-		ctx.fillStyle = "#FFCC66";
-		for(var k = 0; k < pickUp.length; k++){
-			var xx = Math.floor(pickUp[k].x + 0.5);
-			var yy = Math.floor(pickUp[k].y + 0.5);
-			ctx.drawImage(coin,xx,yy);
-			//ctx.fillRect(pickUp[k].x, pickUp[k].y, pickUp[k].width, pickUp[k].height);
-		}
 		//Wallet
 		ctx.font = "20pt Helvetica";
+		ctx.fillStyle = "#FFB400";
 		ctx.fillText("$ " + wallet, 10, 30);
 		
 		//Type of Tree that you will plant
-		ctx.fillStyle = "#BB9999";
+		ctx.fillStyle = "#000000";
 		ctx.fillText(unlocked[type].type + " ($ " + getTreeByType(unlocked[type].type).cost + ")",10,60);
 		
 		//Crosshair
@@ -1190,7 +1212,7 @@
 				speed: 30,
 				health: 50,
 				hitTime: 1000,
-				damage: 20,
+				damage: 15,
 				type: "swarm"
 				},
 			
@@ -1201,8 +1223,8 @@
 				height: 50,
 				speed: 5,
 				health: 400,
-				hitTime: 1000,
-				damage: 30,
+				hitTime: 1500,
+				damage: 45,
 				type: "tank"
 				},
 			
@@ -1214,7 +1236,7 @@
 				speed: 10,
 				health: 100,
 				hitTime: 1000,
-				damage: 20,
+				damage: 15,
 				type: "ranged"
 				}
 		}			
@@ -1253,7 +1275,7 @@
 				health: 100,
 				range: 200,
 				type: "manufactured",
-				cost: 300,//300
+				cost: 250, //250
 				bulletToFire: {
 					x: 0,
 					y: 0,
@@ -1261,7 +1283,7 @@
 					height: 5,
 					angle: 0,
 					speed: 300,
-					damage: 25
+					damage: 20
 				}
 			},
 			
@@ -1275,7 +1297,7 @@
 				health: 100,
 				range: 125,
 				type: "oak",
-				cost: 450,//450
+				cost: 425, //425
 				bulletToFire: {
 					x: 0,
 					y: 0,
@@ -1293,11 +1315,11 @@
 				width: 50,
 				height: 50,
 				timeToWait: 1000,
-				clip: 40,
+				clip: 0,
 				health: 500,
 				range: 100,
 				type: "petrified",
-				cost: 250,//250
+				cost: 200,//200
 				bulletToFire: {
 					x: 0,
 					y: 0,
@@ -1341,7 +1363,7 @@
 				health: 150,
 				range: 100,
 				type: "shrub",
-				cost: 400,//400
+				cost: 375,//375
 				bulletToFire: {
 					x: 0,
 					y: 0,
@@ -1355,12 +1377,12 @@
 		}
 		
 		QUOTES = {
-			master: [ "I AM YOUR GOD", "PROTECT ME SLAVES"],
+			master: [ "I AM YOUR GOD", "PROTECT ME SLAVES", "THIS IS MY KINGDOM!"],
 			manufactured: ["~Virus Detected~", "~Commencing Cleanup~"],
 			oak: ["Ew! A spider!", "Kill it with fire!"],
-			petrified: ["That tickles...", "Are you trying to hurt me?"],
-			bamboo: ["I will help you grow.","Ready for your examination?"],
-			shrub: ["Ni!","Bring me a shrubbery!"]
+			petrified: ["That tickles...", "That doesn't hurt..."],
+			bamboo: ["I will help you grow.","I laugh at your pain!"],
+			shrub: ["Ni!","Bring me a shrubbery!","He said \"it\"!!!"]
 		};
 		
 		loadingSetup();
