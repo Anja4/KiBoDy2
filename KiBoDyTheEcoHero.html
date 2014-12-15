@@ -11,6 +11,7 @@
 </head>
 <body>
 	<h1>Kibody, the eco friendly Hero</h1>
+	<h2>WASD to move, E to place tree, Q to switch type of tree, Click to shoot</h2>
 	<canvas id='canvas' width='800' height='600'></canvas>
 	<script type='text/javascript'>
 	
@@ -70,10 +71,10 @@
 	var QUOTES;
 	var unlocked = [
 		{ value: true, type: "manufactured"},
-		{ value: true, type: "oak"},
-		{ value: true, type: "petrified"},
-		{ value: true, type: "bamboo"},
-		{ value: true, type: "shrub"}
+		{ value: false, type: "oak"},
+		{ value: false, type: "petrified"},
+		{ value: false, type: "bamboo"},
+		{ value: false, type: "shrub"}
 		];
 		/*for now, I set all of these values to true for testing purposes. Here is what it is supposed to be:
 		the first value in the array should always be true (this means you can always place manufactured trees.)
@@ -308,7 +309,7 @@
 		
 		//*****This code makes the trees shoot at baddies
 		for(var i = 0; i < trees.length; i++){
-			
+		
 			//refills clip if the player is touching the tree.
 			if(collide(trees[i],player))
 				trees[i].clip = getTreeByType(trees[i].type).clip;
@@ -333,7 +334,7 @@
 								var hithere = {
 									x: trees[i].x - 10,
 									y: trees[i].y - 10,
-									width: trees[i].widht + 20,
+									width: trees[i].width + 20,
 									height: trees[i].height + 20
 								};
 								if(collide(hithere,trees[k])){
@@ -840,6 +841,17 @@
 		return OBJ;
 	}
 	
+	function unlockTree(v){//This function receives the current Wave and unlocks trees.
+		//This is really gross. Sorry.
+		var shuffle = [1, 2, 3, 4];//the vals stored inside correlate to a spot in the unlocked var. This is for randomization.		
+		if(v%2==1){
+			var rand = Math.floor(Math.random()*shuffle.length-1);
+			var index = shuffle[rand];
+			unlocked[index].value = true;
+			shuffle.splice(rand, 1);
+		}
+	}
+	
 	function setWave(v){
 		waveNum = v;
 		
@@ -880,7 +892,8 @@
 				break;
 			
 		}
-		
+	
+		unlockTree(waveNum);
 		addSpeechBubble((can.width * 0.5) - 25, (can.height * 0.5) - 25,"master");
 	}
 	
