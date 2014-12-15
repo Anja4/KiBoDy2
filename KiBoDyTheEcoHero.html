@@ -76,6 +76,7 @@
 		{ value: false, type: "bamboo"},
 		{ value: false, type: "shrub"}
 		];
+		var shuffle = [];
 		/*for now, I set all of these values to true for testing purposes. Here is what it is supposed to be:
 		the first value in the array should always be true (this means you can always place manufactured trees.)
 		the other values in the array should start out as false, but picking up a seed will turn a random one (that is currently false) to true
@@ -656,6 +657,7 @@
 		if(pickUp.length > 0)
 			pickUp.splice(0,pickUp.length);
 		
+		var shuffle = [1, 2, 3, 4];
 		setWave(0);
 		
 		addTree((can.width * 0.5) - 25, (can.height * 0.5) - 25,"master");
@@ -842,8 +844,7 @@
 	}
 	
 	function unlockTree(v){//This function receives the current Wave and unlocks trees.
-		//This is really gross. Sorry.
-		var shuffle = [1, 2, 3, 4];//the vals stored inside correlate to a spot in the unlocked var. This is for randomization.		
+		//This is really gross. Sorry.		
 		if(v%2==1){
 			var rand = Math.floor(Math.random()*shuffle.length-1);
 			var index = shuffle[rand];
