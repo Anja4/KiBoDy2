@@ -310,7 +310,7 @@
 				sounds.play('treeHurt');
 				baddies[i].hitTime = getBaddieByType(baddies[i].type).hitTime;
 				if(trees[col].type == "shrub")
-					trees[col].bulletToFire.damage += baddies[i].damage;
+					trees[col].bulletToFire.damage +=  2 * baddies[i].damage;
 			}
 			
 			for(var j = 0; j < bullets.length; j++){//collision detection between bullets and baddies
@@ -353,7 +353,7 @@
 									height: trees[i].height + 20
 								};
 								if(collide(hithere,trees[k])){
-									trees[k].health += 5;
+									trees[k].health += 7;
 									if(trees[k].health > getTreeByType(trees[k].type).health)
 										trees[k].health = getTreeByType(trees[k].type).health;
 								}
@@ -1350,7 +1350,7 @@
 				health: 100,
 				range: 125,
 				type: "oak",
-				cost: 400,
+				cost: 300,
 				bulletToFire: {
 					x: 0,
 					y: 0,
@@ -1416,7 +1416,7 @@
 				health: 200,
 				range: 100,
 				type: "shrub",
-				cost: 300,
+				cost: 250,
 				bulletToFire: {
 					x: 0,
 					y: 0,
