@@ -20,7 +20,7 @@ Info you need to play the game:
 The object of the game is to protect the master tree (in the center). If this tree is destroyed, you lose.
 Use WASD to move your character. Click to shoot. Press E to place a tree (given that you have the money required). 
 Press Q To switch what type of tree you want to plant. A new tree will be given to you every here and there.
-Touching a tree will replenish it's ammunition.
+Touching a tree will replenish (pollinate) it's ammunition.
 
 Trees:
 

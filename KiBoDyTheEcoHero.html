@@ -75,7 +75,7 @@
 		{
 			waveLength: 120000,
 			waveDelay: 5000,
-			times: [2000,1500,2000,3000],
+			times: [2000,1500,3000,3000],
 		}
 		];
 	
@@ -90,7 +90,7 @@
 		{ value: false, type: "bamboo"},
 		{ value: false, type: "shrub"}
 		];
-		var shuffle = [];
+	var shuffle = [];
 		/*for now, I set all of these values to true for testing purposes. Here is what it is supposed to be:
 		the first value in the array should always be true (this means you can always place manufactured trees.)
 		the other values in the array should start out as false, but picking up a seed will turn a random one (that is currently false) to true
@@ -677,7 +677,7 @@
 		if(pickUp.length > 0)
 			pickUp.splice(0,pickUp.length);
 		
-		var shuffle = [1, 2, 3, 4];
+		shuffle = [1, 2, 3, 4];
 		setWave(0);
 		
 		addTree((can.width * 0.5) - 25, (can.height * 0.5) - 25,"master");
@@ -870,9 +870,10 @@
 	function unlockTree(v){//This function receives the current Wave and unlocks trees.
 		//This is really gross. Sorry.		
 		if(v%2==1){
-			var rand = Math.floor(Math.random()*shuffle.length-1);
+			var rand = Math.floor(Math.random()*shuffle.length);
 			var index = shuffle[rand];
 			unlocked[index].value = true;
+			addSpeechBubble(350,400,"Unlocked " + unlocked[index].type + " trees");
 			shuffle.splice(rand, 1);
 		}
 	}
@@ -1274,7 +1275,7 @@
 				width:20,
 				height: 20,
 				speed: 30,
-				health: 50,
+				health: 40,
 				hitTime: 1000,
 				worth: 15,
 				damage: 10,
@@ -1342,7 +1343,7 @@
 				health: 100,
 				range: 200,
 				type: "manufactured",
-				cost: 225,
+				cost: 200,
 				bulletToFire: {
 					x: 0,
 					y: 0,
@@ -1362,7 +1363,7 @@
 				timeToWait: 10000,
 				clip: 6,
 				health: 100,
-				range: 125,
+				range: 150,
 				type: "oak",
 				cost: 300,
 				bulletToFire: {
